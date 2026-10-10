@@ -43,7 +43,7 @@ That output is from a real run. The npm package is `@adxtya21/decisionkit`; the 
 
 ![decisionkit CLI: choice, binary and rank with probability bars](docs/media/demo-cli.gif)
 
-🎬 [Watch the 37-second launch video (with sound)](docs/media/decisionkit-launch.mp4)
+🎬 [Watch the 40-second launch video (with sound)](docs/media/decisionkit-launch.mp4)
 
 ## Why use it
 
