@@ -67,6 +67,7 @@ Then:
 
 | Area | Task | |
 |---|---|---|
+| CLI | Accept level and option descriptions, e.g. `"SEV1: full outage or data loss"`. Bare labels give the model no rubric; a live `score` run split between SEV2 and SEV1 without one. | good first issue |
 | CLI | `decisionkit batch`: read JSONL from stdin and decide every line in one process. This avoids the ~0.85 s cold start per call. | good first issue |
 | CI | Add `windows-latest` to the test matrix, and fix any path issues | good first issue |
 | Bundle | Shrink `dist/server.mjs` (~820 kB) by checking what the MCP SDK and Zod pull in | good first issue |

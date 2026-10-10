@@ -5,7 +5,7 @@
 
 ## 0. Build status (2026‑10‑10)
 
-**Released:** `@adxtya21/decisionkit@0.2.0` on npm (npm rejected the unscoped name as too close to `decision-kit`). The command is `decisionkit`: CLI with a subcommand, MCP server without. Contributor rules are in `AGENTS.md`.
+**Released:** `@adxtya21/decisionkit@0.2.1` is the latest on npm. **Live CLI check of the npm-installed 0.2.1:** `choice`, `binary`, `score` and `rank` against OpenAI Decisions, and `choice` against Jev via OpenRouter. All 5 returned exit 0 with plausible answers; cold calls took 1.2–2.3 s, warm ones 148–544 ms. First npm release: `@adxtya21/decisionkit@0.2.0` (npm rejected the unscoped name as too close to `decision-kit`). The command is `decisionkit`: CLI with a subcommand, MCP server without. Contributor rules are in `AGENTS.md`.
 
 Built per this design: `src/` (schema, Jev + OpenAI adapters, `decide.ts`, `server.ts`), plugin manifests, the npm bundle, tests, CI, the README and the benchmark harness.
 
