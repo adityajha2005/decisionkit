@@ -89,8 +89,10 @@ cat bug.txt | decisionkit rank "How relevant is this file to the bug?" "csv_writ
 The same server ships on npm. Install it once, with a pinned version:
 
 ```bash
-npm i -g decisionkit@0.2.0
+npm i -g @adxtya21/decisionkit@0.2.0
 ```
+
+The npm package is `@adxtya21/decisionkit`; the command it installs is `decisionkit`.
 
 In every client, decisionkit reads **only** `DECISIONKIT_*` variables:
 

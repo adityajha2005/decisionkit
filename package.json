@@ -1,5 +1,5 @@
 {
-  "name": "decisionkit",
+  "name": "@adxtya21/decisionkit",
   "version": "0.2.0",
   "description": "Provider-neutral decision tool (Jev, OpenAI Decisions API) as an MCP server for Claude Code and any MCP client",
   "scripts": {
@@ -40,5 +40,8 @@
     "type": "git",
     "url": "git+https://github.com/adityajha2005/decisionkit.git"
   },
-  "homepage": "https://github.com/adityajha2005/decisionkit#readme"
+  "homepage": "https://github.com/adityajha2005/decisionkit#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

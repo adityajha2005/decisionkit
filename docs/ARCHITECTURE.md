@@ -550,7 +550,7 @@ How this maps to the installer requirements:
 - It would store the API key either in plaintext `~/.claude.json` env or in a custom keychain integration.
 - It takes the same number of user commands.
 
-npm stays useful later for a standalone `npx decisionkit` server for other MCP clients.
+npm stays useful later for a standalone `npx @adxtya21/decisionkit` server for other MCP clients.
 
 **Fallback path (documented, not automated):**
 
@@ -572,7 +572,7 @@ The README warns that this stores the key in plaintext in `~/.claude.json`.
 
 The same `dist/server.mjs` is published to npm as `decisionkit`, with a `bin` entry and no runtime dependencies. Any MCP client runs it over stdio, and the user's own model (GPT, Gemini, Claude, …) decides when to call `decide`. The decision itself still goes to Jev or OpenAI Decisions.
 
-**Recommended launch command:** `npm i -g decisionkit@<version>`, then `command: "decisionkit"`. With `npx -y decisionkit@<version>`, the first run downloads the package, which can exceed short startup timeouts; Codex defaults to 10s, and the README sets `startup_timeout_sec = 30` for it. **Always pin the version** in snippets so a new publish never changes a user's tool silently.
+**Recommended launch command:** `npm i -g @adxtya21/decisionkit@<version>`, then `command: "decisionkit"`. With `npx -y @adxtya21/decisionkit@<version>`, the first run downloads the package, which can exceed short startup timeouts; Codex defaults to 10s, and the README sets `startup_timeout_sec = 30` for it. **Always pin the version** in snippets so a new publish never changes a user's tool silently.
 
 | Client | Config | How to pass the key | Secret ends up | Gotcha |
 |---|---|---|---|---|
