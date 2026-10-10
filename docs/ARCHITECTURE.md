@@ -27,7 +27,7 @@ Built per this design: `src/` (schema, Jev + OpenAI adapters, `decide.ts`, `serv
 - **Live provider calls: OpenAI verified 2026‑10‑10.** On OpenAI (`gpt-6-luna`), the 20‑task seed benchmark had 0 errors and 19/20 correct (95%, 95% CI 76–99). p50 latency was 219 ms, with a 4.7 s cold first call. Total estimated cost was $0.0005. The one miss (brk‑5) looks like an ambiguous label rather than a model error. n is small and the tasks are author‑written, so this is **not** a quality claim.
 - **Secure store on Linux** (R3). On macOS it is verified: installing from GitHub with `--config openai_api_key=…` kept the key out of `settings.json`, and the server received it. Whether uninstall clears the Keychain entry is still unverified.
 - **Other clients:** Codex, Cursor and VS Code smoke tests were not run. The `decide` input schema emits a 4‑variant `oneOf`, and whether every client handles it is unverified.
-- **Benchmark:** 20 seed tasks (5 per type) rather than the planned 60, and not yet run against any provider.
+- **Benchmark:** done. 100 blind-checked tasks (v2) plus the 20 seed tasks, run on OpenAI Decisions, Jev via OpenRouter, Haiku 5.5 direct and Haiku 5.5 via `claude -p`. See `bench/RESULTS.md`.
 
 ---
 

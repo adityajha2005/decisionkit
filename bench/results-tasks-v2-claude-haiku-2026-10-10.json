@@ -1,0 +1,780 @@
+{
+  "task_set": "tasks-v2",
+  "system": "claude-haiku",
+  "model": "claude-haiku-5-5",
+  "date": "2026-10-10T06:47:17.588Z",
+  "summary": [
+    {
+      "type": "all",
+      "n": 100,
+      "errors": 0,
+      "accuracy": 95,
+      "ci95": [
+        89,
+        98
+      ],
+      "brier": null,
+      "p50_ms": 3998,
+      "p95_ms": 5090,
+      "cost_usd": 0.020793
+    },
+    {
+      "type": "binary",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 100,
+      "ci95": [
+        87,
+        100
+      ],
+      "brier": null,
+      "p50_ms": 4206,
+      "p95_ms": 5367,
+      "cost_usd": 0.005474
+    },
+    {
+      "type": "choice",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 100,
+      "ci95": [
+        87,
+        100
+      ],
+      "brier": null,
+      "p50_ms": 4035,
+      "p95_ms": 5228,
+      "cost_usd": 0.004858
+    },
+    {
+      "type": "score",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 84,
+      "ci95": [
+        65,
+        94
+      ],
+      "brier": null,
+      "p50_ms": 3943,
+      "p95_ms": 4889,
+      "cost_usd": 0.00514
+    },
+    {
+      "type": "rank",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 96,
+      "ci95": [
+        80,
+        99
+      ],
+      "brier": null,
+      "p50_ms": 3860,
+      "p95_ms": 5082,
+      "cost_usd": 0.005321
+    }
+  ],
+  "rows": [
+    {
+      "id": "k01",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3580,
+      "cost_usd": 0.00019723
+    },
+    {
+      "id": "k02",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3464,
+      "cost_usd": 0.00019293
+    },
+    {
+      "id": "k03",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3569,
+      "cost_usd": 0.00019283
+    },
+    {
+      "id": "k04",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4235,
+      "cost_usd": 0.00019973000000000001
+    },
+    {
+      "id": "k05",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4440,
+      "cost_usd": 0.00019643
+    },
+    {
+      "id": "k06",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 5273,
+      "cost_usd": 0.00019383000000000003
+    },
+    {
+      "id": "k07",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4035,
+      "cost_usd": 0.00019413
+    },
+    {
+      "id": "k08",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4820,
+      "cost_usd": 0.00019723
+    },
+    {
+      "id": "k09",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2494,
+      "cost_usd": 0.00019443
+    },
+    {
+      "id": "k10",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 5228,
+      "cost_usd": 0.00019103000000000002
+    },
+    {
+      "id": "k11",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4059,
+      "cost_usd": 0.00019753000000000001
+    },
+    {
+      "id": "k12",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 5052,
+      "cost_usd": 0.00019663
+    },
+    {
+      "id": "k13",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3484,
+      "cost_usd": 0.00019373000000000003
+    },
+    {
+      "id": "k14",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4603,
+      "cost_usd": 0.00019383000000000003
+    },
+    {
+      "id": "a01",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3998,
+      "cost_usd": 0.00019253
+    },
+    {
+      "id": "a02",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3455,
+      "cost_usd": 0.00019162999999999998
+    },
+    {
+      "id": "a03",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4445,
+      "cost_usd": 0.00019383000000000003
+    },
+    {
+      "id": "a04",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3606,
+      "cost_usd": 0.00019353000000000003
+    },
+    {
+      "id": "a05",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3492,
+      "cost_usd": 0.00019443
+    },
+    {
+      "id": "a06",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4230,
+      "cost_usd": 0.00019353000000000003
+    },
+    {
+      "id": "a07",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3493,
+      "cost_usd": 0.00019523
+    },
+    {
+      "id": "a08",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3017,
+      "cost_usd": 0.00019423000000000004
+    },
+    {
+      "id": "a09",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2741,
+      "cost_usd": 0.00019403000000000004
+    },
+    {
+      "id": "a10",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4879,
+      "cost_usd": 0.00019053
+    },
+    {
+      "id": "a11",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 4897,
+      "cost_usd": 0.00019343000000000002
+    },
+    {
+      "id": "b01",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4711,
+      "cost_usd": 0.00019393
+    },
+    {
+      "id": "b02",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3892,
+      "cost_usd": 0.00019213000000000002
+    },
+    {
+      "id": "b03",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4672,
+      "cost_usd": 0.00019413
+    },
+    {
+      "id": "b04",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4359,
+      "cost_usd": 0.00019153
+    },
+    {
+      "id": "b05",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 5086,
+      "cost_usd": 0.00019033
+    },
+    {
+      "id": "b06",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3546,
+      "cost_usd": 0.00019213000000000002
+    },
+    {
+      "id": "b07",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4206,
+      "cost_usd": 0.00019313000000000002
+    },
+    {
+      "id": "b08",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3296,
+      "cost_usd": 0.00019293
+    },
+    {
+      "id": "b09",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4983,
+      "cost_usd": 0.00019333000000000002
+    },
+    {
+      "id": "b10",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4624,
+      "cost_usd": 0.00023243
+    },
+    {
+      "id": "b11",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3450,
+      "cost_usd": 0.00019133
+    },
+    {
+      "id": "b12",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4224,
+      "cost_usd": 0.00019473
+    },
+    {
+      "id": "b13",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3200,
+      "cost_usd": 0.00018953
+    },
+    {
+      "id": "m01",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4480,
+      "cost_usd": 0.00029003000000000004
+    },
+    {
+      "id": "m02",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3892,
+      "cost_usd": 0.00022533000000000004
+    },
+    {
+      "id": "m03",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3615,
+      "cost_usd": 0.00019113
+    },
+    {
+      "id": "m04",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 5367,
+      "cost_usd": 0.00019153
+    },
+    {
+      "id": "m05",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4704,
+      "cost_usd": 0.00018953
+    },
+    {
+      "id": "m06",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3862,
+      "cost_usd": 0.00024912999999999997
+    },
+    {
+      "id": "m07",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 4935,
+      "cost_usd": 0.00021923
+    },
+    {
+      "id": "m08",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3045,
+      "cost_usd": 0.00018973000000000001
+    },
+    {
+      "id": "m09",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3929,
+      "cost_usd": 0.00028103000000000004
+    },
+    {
+      "id": "m10",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3583,
+      "cost_usd": 0.00027013000000000004
+    },
+    {
+      "id": "m11",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 3869,
+      "cost_usd": 0.00023783000000000002
+    },
+    {
+      "id": "m12",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 7083,
+      "cost_usd": 0.00039762999999999995
+    },
+    {
+      "id": "s01",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3754,
+      "cost_usd": 0.00019283
+    },
+    {
+      "id": "s02",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3604,
+      "cost_usd": 0.00019533000000000002
+    },
+    {
+      "id": "s03",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4592,
+      "cost_usd": 0.00027333
+    },
+    {
+      "id": "s04",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 4082,
+      "cost_usd": 0.00019723
+    },
+    {
+      "id": "s05",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3083,
+      "cost_usd": 0.00019182999999999998
+    },
+    {
+      "id": "s06",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3943,
+      "cost_usd": 0.00019533000000000002
+    },
+    {
+      "id": "s07",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4300,
+      "cost_usd": 0.00024683
+    },
+    {
+      "id": "s08",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4607,
+      "cost_usd": 0.00028813000000000005
+    },
+    {
+      "id": "s09",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3458,
+      "cost_usd": 0.00019243
+    },
+    {
+      "id": "s10",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3382,
+      "cost_usd": 0.00019263
+    },
+    {
+      "id": "s11",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4483,
+      "cost_usd": 0.00019253
+    },
+    {
+      "id": "s12",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3685,
+      "cost_usd": 0.00024753000000000004
+    },
+    {
+      "id": "s13",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3366,
+      "cost_usd": 0.00019463
+    },
+    {
+      "id": "i01",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3641,
+      "cost_usd": 0.00019383000000000003
+    },
+    {
+      "id": "i02",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4572,
+      "cost_usd": 0.00019423000000000004
+    },
+    {
+      "id": "i03",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3654,
+      "cost_usd": 0.00019543000000000002
+    },
+    {
+      "id": "i04",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3426,
+      "cost_usd": 0.00019643
+    },
+    {
+      "id": "i05",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3659,
+      "cost_usd": 0.00019363000000000003
+    },
+    {
+      "id": "i06",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4261,
+      "cost_usd": 0.00019403000000000004
+    },
+    {
+      "id": "i07",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 4889,
+      "cost_usd": 0.00019683
+    },
+    {
+      "id": "i08",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 3668,
+      "cost_usd": 0.00019503
+    },
+    {
+      "id": "i09",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4380,
+      "cost_usd": 0.00019483
+    },
+    {
+      "id": "i10",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 5072,
+      "cost_usd": 0.00019523
+    },
+    {
+      "id": "i11",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 4207,
+      "cost_usd": 0.00019263
+    },
+    {
+      "id": "i12",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 4123,
+      "cost_usd": 0.00019703
+    },
+    {
+      "id": "r01",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4255,
+      "cost_usd": 0.00021753
+    },
+    {
+      "id": "r02",
+      "type": "rank",
+      "correct": false,
+      "latency_ms": 3485,
+      "cost_usd": 0.00021513000000000004
+    },
+    {
+      "id": "r03",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3345,
+      "cost_usd": 0.00021613
+    },
+    {
+      "id": "r04",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3207,
+      "cost_usd": 0.00021433000000000002
+    },
+    {
+      "id": "r05",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3942,
+      "cost_usd": 0.00021173
+    },
+    {
+      "id": "r06",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 2966,
+      "cost_usd": 0.00021273
+    },
+    {
+      "id": "r07",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3163,
+      "cost_usd": 0.00021013000000000002
+    },
+    {
+      "id": "r08",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3645,
+      "cost_usd": 0.00020993000000000002
+    },
+    {
+      "id": "r09",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4713,
+      "cost_usd": 0.00021253
+    },
+    {
+      "id": "r10",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4727,
+      "cost_usd": 0.00020893
+    },
+    {
+      "id": "r11",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4720,
+      "cost_usd": 0.00021053000000000003
+    },
+    {
+      "id": "r12",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3561,
+      "cost_usd": 0.00021133000000000002
+    },
+    {
+      "id": "r13",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3576,
+      "cost_usd": 0.00021053000000000003
+    },
+    {
+      "id": "r14",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3174,
+      "cost_usd": 0.00021473000000000003
+    },
+    {
+      "id": "r15",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3399,
+      "cost_usd": 0.00021593000000000003
+    },
+    {
+      "id": "r16",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4379,
+      "cost_usd": 0.00021713
+    },
+    {
+      "id": "r17",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4561,
+      "cost_usd": 0.00020973
+    },
+    {
+      "id": "r18",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3860,
+      "cost_usd": 0.00021013000000000002
+    },
+    {
+      "id": "r19",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4930,
+      "cost_usd": 0.00021273
+    },
+    {
+      "id": "r20",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 5082,
+      "cost_usd": 0.00021553000000000002
+    },
+    {
+      "id": "r21",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3839,
+      "cost_usd": 0.00021173
+    },
+    {
+      "id": "r22",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 5090,
+      "cost_usd": 0.00021353
+    },
+    {
+      "id": "r23",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 3616,
+      "cost_usd": 0.00021333000000000002
+    },
+    {
+      "id": "r24",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4445,
+      "cost_usd": 0.00021233000000000002
+    },
+    {
+      "id": "r25",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 4201,
+      "cost_usd": 0.00021253
+    }
+  ]
+}

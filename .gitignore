@@ -1,5 +1,4 @@
 node_modules/
 *.tgz
-bench/results-*.json
 .DS_Store
 .env

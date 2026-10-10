@@ -1,0 +1,780 @@
+{
+  "task_set": "tasks-v2",
+  "system": "haiku-via-openrouter",
+  "model": "anthropic/claude-haiku-5.5",
+  "date": "2026-10-10T06:54:36.654Z",
+  "summary": [
+    {
+      "type": "all",
+      "n": 100,
+      "errors": 0,
+      "accuracy": 97,
+      "ci95": [
+        92,
+        99
+      ],
+      "brier": null,
+      "p50_ms": 1803,
+      "p95_ms": 2482,
+      "cost_usd": 0.004521
+    },
+    {
+      "type": "binary",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 100,
+      "ci95": [
+        87,
+        100
+      ],
+      "brier": null,
+      "p50_ms": 1815,
+      "p95_ms": 2321,
+      "cost_usd": 0.001126
+    },
+    {
+      "type": "choice",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 100,
+      "ci95": [
+        87,
+        100
+      ],
+      "brier": null,
+      "p50_ms": 1840,
+      "p95_ms": 2652,
+      "cost_usd": 0.00107
+    },
+    {
+      "type": "score",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 88,
+      "ci95": [
+        70,
+        96
+      ],
+      "brier": null,
+      "p50_ms": 1752,
+      "p95_ms": 1908,
+      "cost_usd": 0.001065
+    },
+    {
+      "type": "rank",
+      "n": 25,
+      "errors": 0,
+      "accuracy": 100,
+      "ci95": [
+        87,
+        100
+      ],
+      "brier": null,
+      "p50_ms": 1722,
+      "p95_ms": 1926,
+      "cost_usd": 0.001261
+    }
+  ],
+  "rows": [
+    {
+      "id": "k01",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 3602,
+      "cost_usd": 0.0000445
+    },
+    {
+      "id": "k02",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2441,
+      "cost_usd": 0.0000421
+    },
+    {
+      "id": "k03",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1226,
+      "cost_usd": 0.000042300000000000005
+    },
+    {
+      "id": "k04",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2425,
+      "cost_usd": 0.000046
+    },
+    {
+      "id": "k05",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1729,
+      "cost_usd": 0.0000441
+    },
+    {
+      "id": "k06",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2389,
+      "cost_usd": 0.000042800000000000004
+    },
+    {
+      "id": "k07",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2619,
+      "cost_usd": 0.0000427
+    },
+    {
+      "id": "k08",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1844,
+      "cost_usd": 0.0000445
+    },
+    {
+      "id": "k09",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1683,
+      "cost_usd": 0.000043100000000000004
+    },
+    {
+      "id": "k10",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1920,
+      "cost_usd": 0.0000414
+    },
+    {
+      "id": "k11",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1687,
+      "cost_usd": 0.00004490000000000001
+    },
+    {
+      "id": "k12",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1783,
+      "cost_usd": 0.000044200000000000004
+    },
+    {
+      "id": "k13",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1805,
+      "cost_usd": 0.0000425
+    },
+    {
+      "id": "k14",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1863,
+      "cost_usd": 0.000042800000000000004
+    },
+    {
+      "id": "a01",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2652,
+      "cost_usd": 0.000041800000000000006
+    },
+    {
+      "id": "a02",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2482,
+      "cost_usd": 0.0000411
+    },
+    {
+      "id": "a03",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 2044,
+      "cost_usd": 0.0000422
+    },
+    {
+      "id": "a04",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1840,
+      "cost_usd": 0.000041800000000000006
+    },
+    {
+      "id": "a05",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1736,
+      "cost_usd": 0.0000425
+    },
+    {
+      "id": "a06",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1839,
+      "cost_usd": 0.000042300000000000005
+    },
+    {
+      "id": "a07",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1829,
+      "cost_usd": 0.0000429
+    },
+    {
+      "id": "a08",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1830,
+      "cost_usd": 0.0000424
+    },
+    {
+      "id": "a09",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1803,
+      "cost_usd": 0.000042300000000000005
+    },
+    {
+      "id": "a10",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1914,
+      "cost_usd": 0.000040300000000000004
+    },
+    {
+      "id": "a11",
+      "type": "choice",
+      "correct": true,
+      "latency_ms": 1831,
+      "cost_usd": 0.000042
+    },
+    {
+      "id": "b01",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1986,
+      "cost_usd": 0.0000605
+    },
+    {
+      "id": "b02",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1631,
+      "cost_usd": 0.0000391
+    },
+    {
+      "id": "b03",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1878,
+      "cost_usd": 0.0000401
+    },
+    {
+      "id": "b04",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1882,
+      "cost_usd": 0.0000618
+    },
+    {
+      "id": "b05",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 2321,
+      "cost_usd": 0.0001017
+    },
+    {
+      "id": "b06",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 2138,
+      "cost_usd": 0.0000631
+    },
+    {
+      "id": "b07",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1716,
+      "cost_usd": 0.0000396
+    },
+    {
+      "id": "b08",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1903,
+      "cost_usd": 0.0000395
+    },
+    {
+      "id": "b09",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1299,
+      "cost_usd": 0.0000397
+    },
+    {
+      "id": "b10",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1902,
+      "cost_usd": 0.0000665
+    },
+    {
+      "id": "b11",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1879,
+      "cost_usd": 0.000038700000000000006
+    },
+    {
+      "id": "b12",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1728,
+      "cost_usd": 0.0000404
+    },
+    {
+      "id": "b13",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1615,
+      "cost_usd": 0.000037800000000000004
+    },
+    {
+      "id": "m01",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1788,
+      "cost_usd": 0.0000383
+    },
+    {
+      "id": "m02",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1815,
+      "cost_usd": 0.0000372
+    },
+    {
+      "id": "m03",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1294,
+      "cost_usd": 0.0000386
+    },
+    {
+      "id": "m04",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1676,
+      "cost_usd": 0.0000388
+    },
+    {
+      "id": "m05",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1845,
+      "cost_usd": 0.000037800000000000004
+    },
+    {
+      "id": "m06",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 2529,
+      "cost_usd": 0.0000386
+    },
+    {
+      "id": "m07",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1865,
+      "cost_usd": 0.0000379
+    },
+    {
+      "id": "m08",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1830,
+      "cost_usd": 0.0000379
+    },
+    {
+      "id": "m09",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1564,
+      "cost_usd": 0.000037800000000000004
+    },
+    {
+      "id": "m10",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1332,
+      "cost_usd": 0.000038100000000000005
+    },
+    {
+      "id": "m11",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1680,
+      "cost_usd": 0.0000377
+    },
+    {
+      "id": "m12",
+      "type": "binary",
+      "correct": true,
+      "latency_ms": 1739,
+      "cost_usd": 0.0000386
+    },
+    {
+      "id": "s01",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1759,
+      "cost_usd": 0.0000411
+    },
+    {
+      "id": "s02",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1334,
+      "cost_usd": 0.0000426
+    },
+    {
+      "id": "s03",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1908,
+      "cost_usd": 0.0000426
+    },
+    {
+      "id": "s04",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1856,
+      "cost_usd": 0.0000433
+    },
+    {
+      "id": "s05",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1732,
+      "cost_usd": 0.000040600000000000004
+    },
+    {
+      "id": "s06",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1848,
+      "cost_usd": 0.0000426
+    },
+    {
+      "id": "s07",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1566,
+      "cost_usd": 0.0000421
+    },
+    {
+      "id": "s08",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1638,
+      "cost_usd": 0.000043
+    },
+    {
+      "id": "s09",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1800,
+      "cost_usd": 0.0000409
+    },
+    {
+      "id": "s10",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1814,
+      "cost_usd": 0.000041
+    },
+    {
+      "id": "s11",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1867,
+      "cost_usd": 0.000041200000000000005
+    },
+    {
+      "id": "s12",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1307,
+      "cost_usd": 0.0000407
+    },
+    {
+      "id": "s13",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 1773,
+      "cost_usd": 0.0000415
+    },
+    {
+      "id": "i01",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1699,
+      "cost_usd": 0.0000429
+    },
+    {
+      "id": "i02",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1287,
+      "cost_usd": 0.000043100000000000004
+    },
+    {
+      "id": "i03",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 1741,
+      "cost_usd": 0.000043700000000000005
+    },
+    {
+      "id": "i04",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1854,
+      "cost_usd": 0.000044200000000000004
+    },
+    {
+      "id": "i05",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1864,
+      "cost_usd": 0.000042800000000000004
+    },
+    {
+      "id": "i06",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1683,
+      "cost_usd": 0.000043
+    },
+    {
+      "id": "i07",
+      "type": "score",
+      "correct": false,
+      "latency_ms": 1725,
+      "cost_usd": 0.0000444
+    },
+    {
+      "id": "i08",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1724,
+      "cost_usd": 0.0000435
+    },
+    {
+      "id": "i09",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1818,
+      "cost_usd": 0.0000434
+    },
+    {
+      "id": "i10",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1752,
+      "cost_usd": 0.0000436
+    },
+    {
+      "id": "i11",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 2016,
+      "cost_usd": 0.000042300000000000005
+    },
+    {
+      "id": "i12",
+      "type": "score",
+      "correct": true,
+      "latency_ms": 1686,
+      "cost_usd": 0.0000445
+    },
+    {
+      "id": "r01",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1709,
+      "cost_usd": 0.0000528
+    },
+    {
+      "id": "r02",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1326,
+      "cost_usd": 0.0000516
+    },
+    {
+      "id": "r03",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1672,
+      "cost_usd": 0.0000521
+    },
+    {
+      "id": "r04",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1889,
+      "cost_usd": 0.000051200000000000004
+    },
+    {
+      "id": "r05",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1707,
+      "cost_usd": 0.00004990000000000001
+    },
+    {
+      "id": "r06",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1871,
+      "cost_usd": 0.000050400000000000005
+    },
+    {
+      "id": "r07",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1841,
+      "cost_usd": 0.0000491
+    },
+    {
+      "id": "r08",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1673,
+      "cost_usd": 0.000049
+    },
+    {
+      "id": "r09",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1926,
+      "cost_usd": 0.0000503
+    },
+    {
+      "id": "r10",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1648,
+      "cost_usd": 0.0000485
+    },
+    {
+      "id": "r11",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1748,
+      "cost_usd": 0.000049300000000000006
+    },
+    {
+      "id": "r12",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1722,
+      "cost_usd": 0.0000497
+    },
+    {
+      "id": "r13",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1856,
+      "cost_usd": 0.000049300000000000006
+    },
+    {
+      "id": "r14",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1662,
+      "cost_usd": 0.0000514
+    },
+    {
+      "id": "r15",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1639,
+      "cost_usd": 0.000052
+    },
+    {
+      "id": "r16",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1681,
+      "cost_usd": 0.000052600000000000005
+    },
+    {
+      "id": "r17",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1725,
+      "cost_usd": 0.0000489
+    },
+    {
+      "id": "r18",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1839,
+      "cost_usd": 0.0000491
+    },
+    {
+      "id": "r19",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1957,
+      "cost_usd": 0.000050400000000000005
+    },
+    {
+      "id": "r20",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1923,
+      "cost_usd": 0.000051800000000000005
+    },
+    {
+      "id": "r21",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1686,
+      "cost_usd": 0.00004990000000000001
+    },
+    {
+      "id": "r22",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1698,
+      "cost_usd": 0.0000508
+    },
+    {
+      "id": "r23",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1658,
+      "cost_usd": 0.000050700000000000006
+    },
+    {
+      "id": "r24",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1775,
+      "cost_usd": 0.0000502
+    },
+    {
+      "id": "r25",
+      "type": "rank",
+      "correct": true,
+      "latency_ms": 1850,
+      "cost_usd": 0.0000503
+    }
+  ]
+}
