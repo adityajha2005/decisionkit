@@ -27,6 +27,18 @@ echo "Clicking Export CSV returns HTTP 500 since v2.3" | decisionkit choice "Wha
 
 That output is from a real run. The npm package is `@adxtya21/decisionkit`; the command it installs is `decisionkit`.
 
+## See it work
+
+**In Claude Code:** Claude hands the triage of three issues to Jev in a single call, then flags the one answer it isn't sure about (61%). This is a real recording; Claude's thinking is sped up 10×.
+
+![Claude Code using the decisionkit plugin to triage three issues with Jev](docs/media/demo-claude-code.gif)
+
+**In your terminal:** classify an issue, catch a breaking API change, rank the files behind a bug. This is a real recording at 1.5× speed.
+
+![decisionkit CLI: choice, binary and rank with probability bars](docs/media/demo-cli.gif)
+
+🎬 [Watch the 37-second launch video (with sound)](docs/media/decisionkit-launch.mp4)
+
 ## Why use it
 
 From a 100-task benchmark ([bench/RESULTS.md](bench/RESULTS.md), 2026-10-10):
