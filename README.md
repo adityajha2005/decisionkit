@@ -149,6 +149,7 @@ The agent sends something like this:
 ## Cost and limits
 
 - **Price as of 2026-10-10:** Jev $0.042 and OpenAI $0.10 per 1M input tokens; neither charges for output. `status` reports estimated cost from this table. The OpenAI figure is a lower bound, since regional and long-context multipliers aren't modeled.
+- **Latency:** decisionkit itself adds about 0.25 ms per call. Provider round trips were 135 ms (OpenAI) and 524 ms (Jev via OpenRouter) at the median. The server opens the provider connection at startup, so the first call doesn't pay connection setup. In Claude Code, the plugin loads the tool up front (`alwaysLoad`), which saved Claude a turn: about 1 s on the first use in our test. Ask several related questions in one call; they share a single round trip.
 - **Retries:** up to 3 attempts, only for rate limits, overloads and network errors. `Retry-After` is honored, and nothing is retried past the timeout. Every retry is billed.
 - **Measured, not claimed.** On 100 hand-written tasks ([bench/RESULTS.md](bench/RESULTS.md)), the decision APIs matched Claude Haiku 5.5 on accuracy (all within noise). Jev cost about 2.5x less and OpenAI Decisions about 1.6x less than calling Haiku directly; both were 3–13x faster, and only they return probabilities. Small sample, author-written tasks: read the caveats there.
 

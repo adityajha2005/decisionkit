@@ -68,3 +68,19 @@ DECISIONKIT_PROVIDER=openrouter node --env-file=.env bench/run.ts --tasks tasks-
 node --env-file=.env bench/run.ts --anthropic --via-openrouter --tasks tasks-v2.jsonl
 node bench/run.ts --claude --tasks tasks-v2.jsonl
 ```
+
+## Where the latency goes (2026-10-10)
+
+| Component | Time |
+|---|---|
+| decisionkit itself (validation, mapping, response checks), against a localhost mock, 200 calls | 0.25 ms median, 0.7 ms p95 |
+| Provider round trip, warm (OpenAI Decisions / Jev via OpenRouter) | 135 ms / 524 ms median |
+| First call on a cold connection (DNS + TLS) | up to ~1.7 s. **Removed:** the server now opens the connection at startup. |
+| One headless Claude Code session (Haiku) that calls `status` and `decide` | 23.5 s total, of which 22.3 s was Claude's own model time. `decide` took 562 ms. |
+
+**In Claude Code, the agent's own turns dominate.** Tool loading made a measurable difference:
+
+- **Setup:** one `decide` task, Haiku, mock provider, 3 runs each.
+- **Tools loaded on demand (the default):** 3 turns, 4.6 s median.
+- **`alwaysLoad: true`:** 2 turns, 3.6 s median.
+- **Why:** with `alwaysLoad`, Claude skips the tool-search turn. The plugin now sets it.

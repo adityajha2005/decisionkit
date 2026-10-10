@@ -70,6 +70,7 @@
       "args": [
         "${CLAUDE_PLUGIN_ROOT}/dist/server.mjs"
       ],
+      "alwaysLoad": true,
       "env": {
         "DECISIONKIT_PROVIDER": "${user_config.provider}",
         "DECISIONKIT_TYPESAFE_API_KEY": "${user_config.typesafe_api_key}",

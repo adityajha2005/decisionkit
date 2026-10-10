@@ -21438,7 +21438,7 @@ Rules:
   came from the tool.
 - \`rank\` is derived from independent scores; treat close values as ties.
 - Call \`status\` to see the active provider, connectivity, and usage totals.`;
-var DECIDE_DESCRIPTION = `Ask an external decision API (Jev or OpenAI Decisions; the result names which) closed-form questions about a text context: binary (probability true), choice (one of listed options), score (ordered rubric, 0-based), rank (order listed candidates; derived). Returns provider probability estimates, not verified calibrated, and no rationale. Use only for judgments over text with a closed answer set. NEVER put secrets, credentials, personal data, or code the user hasn't cleared into context: it is sent to a third party. If the result is an error, report it; never substitute your own answer.`;
+var DECIDE_DESCRIPTION = `Ask an external decision API (Jev or OpenAI Decisions; the result names which) closed-form questions about a text context: binary (probability true), choice (one of listed options), score (ordered rubric, 0-based), rank (order listed candidates; derived). Returns provider probability estimates, not verified calibrated, and no rationale. Use only for judgments over text with a closed answer set. Put all related questions about the same context in one call (one round trip). NEVER put secrets, credentials, personal data, or code the user hasn't cleared into context: it is sent to a third party. If the result is an error, report it; never substitute your own answer.`;
 var cfg = loadConfig();
 var server = new McpServer({ name: "decisionkit", version: VERSION }, { instructions: INSTRUCTIONS });
 server.registerTool("decide", {
@@ -21471,6 +21471,13 @@ server.registerTool("status", {
   }
 });
 await server.connect(new StdioServerTransport());
+if (!("error" in cfg)) {
+  fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), {
+    headers: { authorization: `Bearer ${cfg.apiKey}` },
+    signal: AbortSignal.timeout(5e3)
+  }).then((r) => r.body?.cancel(), () => {
+  });
+}
 process.stderr.write(JSON.stringify({ level: "info", msg: "decisionkit ready", version: VERSION, provider: "error" in cfg ? null : cfg.provider }) + "\n");
 export {
   VERSION
