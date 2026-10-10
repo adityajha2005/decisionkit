@@ -18,12 +18,13 @@ Built per this design: `src/` (schema, Jev + OpenAI adapters, `decide.ts`, `serv
   - Unset values arrive as `""` and defaults are substituted (R1 resolved).
   - `CLAUDE_PLUGIN_DATA` is provided.
   - Uninstall deletes the data dir and `pluginConfigs`.
-- **Real model:** headless Claude Code (Haiku), with the server attached through `--mcp-config` and a mock provider behind it, found the deferred tool, formed a valid call (choice + binary with criteria), and reported the result with the calibration caveat.
+- **Inside real Claude Code (2026‑10‑10):** installed from github.com/adityajha2005/decisionkit. Headless Claude Code (Haiku), with only the two plugin tools allowlisted as `mcp__plugin_decisionkit_decisionkit__{decide,status}`, called `status` (ping 200), then `decide` against live OpenAI. The call took 562 ms on 1 attempt, used 396 input tokens, produced no permission denials, and logged a usage record.
+- **Baseline:** Claude Haiku 5.5 (`claude-haiku-5-5`, confirmed from `modelUsage`) via an isolated `claude -p` got 18/20 (90%, 95% CI 70–99), against 19/20 for OpenAI Decisions; the intervals fully overlap. Haiku cost about $0.004 in total versus $0.0005, and returned no probabilities. Haiku's ~3.7 s p50 includes CLI process start‑up, so latency is not a like‑for‑like comparison.
+- **Real model (mock provider):** headless Claude Code (Haiku), with the server attached through `--mcp-config` and a mock provider behind it, found the deferred tool, formed a valid call (choice + binary with criteria), and reported the result with the calibration caveat.
 
 **Not yet verified:**
 - **Live provider calls: OpenAI verified 2026‑10‑10, Jev still untested.** On OpenAI (`gpt-6-luna`), the 20‑task seed benchmark had 0 errors and 19/20 correct (95%, 95% CI 76–99). p50 latency was 219 ms, with a 4.7 s cold first call. Total estimated cost was $0.0005. The one miss (brk‑5) looks like an ambiguous label rather than a model error. n is small and the tasks are author‑written, so this is **not** a quality claim.
-- **Secure‑store behavior** (R3). No key was written to the real Keychain, and the Linux backend is untested.
-- The exact `permissions.allow` string for the plugin tool.
+- **Secure store on Linux** (R3). On macOS it is verified: installing from GitHub with `--config openai_api_key=…` kept the key out of `settings.json`, and the server received it. Whether uninstall clears the Keychain entry is still unverified.
 - **Other clients:** Codex, Cursor and VS Code smoke tests were not run. The `decide` input schema emits a 4‑variant `oneOf`, and whether every client handles it is unverified.
 - **Benchmark:** 20 seed tasks (5 per type) rather than the planned 60, and not yet run against any provider.
 

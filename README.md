@@ -39,7 +39,7 @@ claude plugin marketplace add adityajha2005/decisionkit
 claude plugin install decisionkit@decisionkit
 ```
 
-Then run `/plugin configure decisionkit@decisionkit` inside Claude Code. Pick a **provider** (required, no default) and paste that provider's API key. Keys are masked and stored in your OS secure store. You can change the other settings later in `/config`.
+Then run `/plugin configure decisionkit@decisionkit` inside Claude Code (or pass `--config provider=openai --config openai_api_key=…` to the install command). Pick a **provider** (required, no default) and paste that provider's API key. Keys are masked and stored in your OS secure store. You can change the other settings later in `/config`.
 
 | Setting | Notes |
 |---|---|
@@ -53,7 +53,7 @@ Then run `/plugin configure decisionkit@decisionkit` inside Claude Code. Pick a 
 
 **Remove it:** `claude plugin uninstall decisionkit@decisionkit`. This deletes the usage log along with the plugin.
 
-**Fewer prompts (optional):** if you're comfortable sending context without a prompt each time, add the tool to `permissions.allow` in your settings. Claude Code names plugin tools `mcp__plugin_decisionkit_decisionkit__decide`; confirm the exact name in `/mcp` before adding it.
+**Fewer prompts (optional):** if you're comfortable sending context without a prompt each time, add the tool to `permissions.allow` in your settings. The tool names are `mcp__plugin_decisionkit_decisionkit__decide` and `mcp__plugin_decisionkit_decisionkit__status`.
 
 ## Install: other AI apps (any model)
 

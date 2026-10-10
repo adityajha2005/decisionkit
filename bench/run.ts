@@ -1,7 +1,7 @@
 // Usage:
 //   DECISIONKIT_PROVIDER=jev DECISIONKIT_TYPESAFE_API_KEY=… DECISIONKIT_MODEL=jev-1.13.0 node bench/run.ts
 //   DECISIONKIT_PROVIDER=openai DECISIONKIT_OPENAI_API_KEY=… node bench/run.ts
-//   node bench/run.ts --claude            # baseline: same tasks through `claude -p`
+//   node bench/run.ts --claude            # baseline: same tasks through `claude -p` (BENCH_CLAUDE_MODEL, default haiku)
 // Prints accuracy, Brier score, latency and cost per task type; writes bench/results-<system>-<date>.json.
 import { readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -14,9 +14,11 @@ type Row = { id: string; type: string; correct: boolean | null; p_label?: number
 
 const tasks: Task[] = readFileSync(join(import.meta.dirname, "tasks.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
 const claude = process.argv.includes("--claude");
+const CLAUDE_MODEL = process.env.BENCH_CLAUDE_MODEL ?? "haiku";
+const resolvedModels = new Set<string>(); // what the alias actually ran, from claude -p modelUsage
 const cfg = loadConfig({ ...process.env, DECISIONKIT_USAGE_LOG: "false" });
 if (!claude && "error" in cfg) { console.error(cfg.error); process.exit(1); }
-const system = claude ? "claude" : (cfg as { provider: string }).provider;
+const system = claude ? `claude-${CLAUDE_MODEL}` : (cfg as { provider: string }).provider;
 
 const rows: Row[] = [];
 for (const t of tasks) {
@@ -46,7 +48,10 @@ function viaClaude(t: Task): Row {
   const prompt = `${t.context}\n\nQuestion: ${q.instructions}\n${detail}\nAnswer with exactly one of: ${allowed.join(", ")}${q.type === "rank" ? " (the best candidate id)" : ""}. Reply with only that value.`;
   const t0 = Date.now();
   try {
-    const out = JSON.parse(execFileSync("claude", ["-p", "--output-format", "json", prompt], { encoding: "utf8", timeout: 120000 }));
+    // Isolated: no user/project settings (so no hooks or plugins), no MCP servers, no tools, nothing saved.
+    const out = JSON.parse(execFileSync("claude", ["-p", "--output-format", "json", "--model", CLAUDE_MODEL, "--setting-sources", "",
+      "--strict-mcp-config", "--tools", "", "--disable-slash-commands", "--no-session-persistence", prompt], { encoding: "utf8", timeout: 120000, stdio: ["ignore", "pipe", "pipe"] }));
+    for (const m of Object.keys(out.modelUsage ?? {})) resolvedModels.add(m);
     const answer = String(out.result).trim().replace(/[`"'.]/g, "");
     return { id: t.id, type: q.type, correct: answer === String(t.label), latency_ms: Date.now() - t0, cost_usd: out.total_cost_usd ?? null };
   } catch (e) {
@@ -76,7 +81,7 @@ const summary = ["all", "binary", "choice", "score", "rank"].map((type) => {
   };
 });
 console.table(summary);
-const model = claude ? "claude -p default" : (cfg as { model: string }).model;
+const model = claude ? ([...resolvedModels].join(",") || CLAUDE_MODEL) : (cfg as { model: string }).model;
 const file = join(import.meta.dirname, `results-${system}-${new Date().toISOString().slice(0, 10)}.json`);
 writeFileSync(file, JSON.stringify({ system, model, date: new Date().toISOString(), summary, rows }, null, 2));
 console.log(`wrote ${file}`);
