@@ -64,7 +64,7 @@ export type ErrorKind =
   | "config" | "invalid_request" | "auth" | "rate_limited" | "quota" | "overloaded"
   | "timeout" | "network" | "provider_response_invalid" | "refused";
 
-export type ProviderName = "jev" | "openrouter" | "openai";
+export type ProviderName = "jev" | "openrouter" | "openai" | "claude";
 
 export type DecideResult =
   | {
@@ -90,6 +90,8 @@ export type Adapter = {
   /** Throws InvalidResponse when the body doesn't match the provider contract. */
   parse(json: unknown, qs: Compiled[]): { model: string; answers: WireAnswer[]; usage: { input_tokens: number; output_tokens?: number; cost?: number } };
   classify(status: number, body: unknown): { kind: ErrorKind; retryable: boolean };
+  /** Non-HTTP transport (the claude CLI). Its outcome is wrapped as a Response. */
+  exec?(body: string, signal: AbortSignal): Promise<Response>;
 };
 
 export class InvalidResponse extends Error {}

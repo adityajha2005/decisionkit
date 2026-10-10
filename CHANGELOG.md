@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 (2026-10-10)
+
+- **New provider `claude`: use your Claude Code subscription, no API key.**
+  - Answers come from `claude -p` with the user's own login, isolated per call: no tools, MCP servers, settings or saved session.
+  - A short system prompt keeps input around 1.2k tokens instead of Claude Code's ~3.5k.
+  - `ANTHROPIC_API_KEY` is stripped from the child process, so a shell key can't move it off the subscription.
+  - The prompt goes over stdin, never argv.
+  - Probabilities are Claude's **self-reported** estimates, and every result says so. Cost is reported as "your Claude plan" (`null`).
+  - About 4–5 s per call; the default timeout is 30 s.
+- The plugin lists `claude` as the first provider option.
+
 ## 0.3.0 (2026-10-10)
 
 - **Formatted CLI view at a terminal:** the question as a header, a probability bar per option with the winner highlighted, and a dim footer with the provider, model, latency and cost.

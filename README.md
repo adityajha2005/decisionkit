@@ -6,6 +6,7 @@ Fast, cheap, closed-form decisions for coding agents, scripts and CI. You ask a 
 
 decisionkit is provider-neutral. It talks to:
 
+- **Claude, with the Claude Code login you already have** (`claude -p`): no extra API key. Claude's probabilities are its own self-reported estimates, and it is slower (about 4 s per call).
 - **OpenAI Decisions API** (public beta), `POST api.openai.com/v1/decisions`
 - **Jev** by TypeSafe AI, `POST api.typesafe.ai/v1/systemone`, with a TypeSafe key
 - **Jev via OpenRouter**: the same Jev API at `POST openrouter.ai/api/v1/systemone`, with an OpenRouter key and billed by OpenRouter
@@ -18,6 +19,11 @@ You can use it as a **CLI**, as a **Claude Code plugin**, or as an **MCP server*
 
 ```bash
 npm i -g @adxtya21/decisionkit
+
+# Have Claude Code? No API key needed:
+export DECISIONKIT_PROVIDER=claude
+
+# Or use a decision API (faster, real probabilities):
 export DECISIONKIT_PROVIDER=openai DECISIONKIT_OPENAI_API_KEY=sk-...
 
 echo "Clicking Export CSV returns HTTP 500 since v2.3" | decisionkit choice "What kind of issue is this?" bug feature refactor docs
@@ -61,6 +67,7 @@ Each decision sends the **context and questions** to **the one provider you conf
 - **Nothing is sent anywhere else, or automatically.** Agents call decisionkit only when they choose to.
 - **Claude Code shows the exact payload** in a permission prompt before each call. Some other clients auto-approve tools; check yours.
 - **Keep sensitive content out of `context`.** Don't send secrets, credentials, personal data or code you haven't cleared for a third party. The tool's description tells agents the same.
+- **The `claude` provider runs on your Claude Code login.** It strips `ANTHROPIC_API_KEY` from its own process, so a key in your shell can't quietly move it off your subscription. It counts toward your plan's usage like any Claude Code request.
 - **Only `DECISIONKIT_*` variables are read.** A bare `OPENAI_API_KEY` or `OPENROUTER_API_KEY` in your shell is never used, so you can't be billed on an account you didn't pick.
 - **No prompt content is logged.** The optional local usage log stores ids, timings, token counts and estimated cost only.
 
@@ -126,7 +133,7 @@ Then run `/plugin configure decisionkit@decisionkit` in Claude Code, or add `--c
 
 | Setting | Notes |
 |---|---|
-| `provider` | `jev`, `openrouter` or `openai` |
+| `provider` | `claude` (your Claude Code login, no key), `jev`, `openrouter` or `openai` |
 | `typesafe_api_key` / `openrouter_api_key` / `openai_api_key` | Only the selected provider's key is used |
 | `model` | Blank means the default: `jev-latest`, `~typesafe/jev-latest` (OpenRouter) or `gpt-6-luna` |
 | `timeout_ms` | Total time per decision, including retries. Default 15000. |
@@ -142,12 +149,12 @@ Then run `/plugin configure decisionkit@decisionkit` in Claude Code, or add `--c
 Install once, with a pinned version, so a new release never changes your tool silently:
 
 ```bash
-npm i -g @adxtya21/decisionkit@0.3.0
+npm i -g @adxtya21/decisionkit@0.4.0
 ```
 
 decisionkit reads **only** these variables:
 
-- `DECISIONKIT_PROVIDER`: `jev`, `openrouter` or `openai`
+- `DECISIONKIT_PROVIDER`: `claude` (no key; needs Claude Code installed and logged in), `jev`, `openrouter` or `openai`
 - `DECISIONKIT_TYPESAFE_API_KEY`, `DECISIONKIT_OPENROUTER_API_KEY` or `DECISIONKIT_OPENAI_API_KEY`
 - Optional: `DECISIONKIT_MODEL`, `DECISIONKIT_TIMEOUT_MS`, `DECISIONKIT_USAGE_LOG`
 
@@ -248,6 +255,8 @@ Put related questions about the same text in **one** call; they share a single r
 
 | Symptom | Cause and fix |
 |---|---|
+| `config: … claude CLI is not on PATH` | The `claude` provider needs Claude Code installed. Run `claude` once and log in. |
+| `auth: … Not logged in` (claude provider) | Run `claude` in a terminal and log in. |
 | `config: No provider selected` | Set `DECISIONKIT_PROVIDER` (`jev`, `openrouter` or `openai`), or the plugin's provider setting. |
 | `config: … DECISIONKIT_OPENAI_API_KEY is not set` | Set the `DECISIONKIT_*` key for the provider you picked. Bare `OPENAI_API_KEY` is ignored on purpose. |
 | `auth: … HTTP 401` | The key doesn't belong to that provider. An OpenRouter key only works with `openrouter`; Jev's own API needs a TypeSafe key from console.typesafe.ai. |

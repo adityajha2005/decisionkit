@@ -9,9 +9,9 @@ var __export = (target, all) => {
 import { parseArgs } from "node:util";
 
 // src/decide.ts
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { accessSync, appendFileSync, constants, mkdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import { randomUUID } from "node:crypto";
 
 // node_modules/zod/v4/core/util.js
@@ -7023,9 +7023,166 @@ function withCriteria(q) {
   return [q.instructions, c.true && `True means: ${c.true}`, c.false && `False means: ${c.false}`].filter(Boolean).join("\n");
 }
 
+// src/providers/claude.ts
+import { spawn } from "node:child_process";
+var SYSTEM = "You are a careful decision engine for software teams. Answer every question only through the structured output. For each question give a probability for every allowed answer; the probabilities for one question must sum to 1. Be calibrated: use values near 0.5 when the text doesn't settle it.";
+var allowed = (q) => q.type === "binary" ? ["true", "false"] : q.type === "choice" ? q.options.map((o) => o.value) : q.levels.map((l) => l.label);
+var describe2 = (q) => {
+  if (q.type === "binary") {
+    const c = q.criteria;
+    return `${q.key} (yes/no): ${q.instructions}
+  answers: "true", "false"${c?.true ? `
+  true means: ${c.true}` : ""}${c?.false ? `
+  false means: ${c.false}` : ""}`;
+  }
+  if (q.type === "choice") return `${q.key} (pick one): ${q.instructions}
+  answers:
+${q.options.map((o) => `  - "${o.value}"${o.description ? `: ${o.description}` : ""}`).join("\n")}`;
+  return `${q.key} (ordered scale, lowest first): ${q.instructions}
+  answers:
+${q.levels.map((l) => `  - "${l.label}"${l.description ? `: ${l.description}` : ""}`).join("\n")}`;
+};
+var Output = object({
+  is_error: boolean2().optional(),
+  api_error_status: number2().nullable().optional(),
+  result: string2().optional(),
+  structured_output: object({
+    answers: array(object({ key: string2(), probabilities: record(string2(), number2().min(0).max(1)) }))
+  }).optional(),
+  usage: object({
+    input_tokens: number2().optional(),
+    output_tokens: number2().optional(),
+    cache_creation_input_tokens: number2().optional(),
+    cache_read_input_tokens: number2().optional()
+  }).optional(),
+  modelUsage: record(string2(), unknown()).optional()
+});
+function claudeEnv(env = process.env) {
+  const out = { ...env };
+  for (const k of ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT"]) delete out[k];
+  return out;
+}
+function runClaude(args2, stdin, signal) {
+  return new Promise((resolve, reject) => {
+    const p = spawn("claude", args2, { env: claudeEnv(), stdio: ["pipe", "pipe", "pipe"] });
+    let stdout = "", stderr = "";
+    p.stdout.on("data", (d) => stdout += d);
+    p.stderr.on("data", (d) => stderr += d);
+    const onAbort = () => {
+      p.kill("SIGTERM");
+      reject(signal.reason);
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+    p.on("error", (e) => {
+      signal.removeEventListener("abort", onAbort);
+      reject(e);
+    });
+    p.on("close", (code) => {
+      signal.removeEventListener("abort", onAbort);
+      resolve({ code, stdout, stderr });
+    });
+    p.stdin.end(stdin);
+  });
+}
+var claude = {
+  name: "claude",
+  label: "Claude (your Claude Code login)",
+  path: "",
+  defaultModel: "haiku",
+  compile(qs, context, model) {
+    const schema = {
+      type: "object",
+      required: ["answers"],
+      properties: { answers: { type: "array", items: {
+        type: "object",
+        required: ["key", "probabilities"],
+        properties: { key: { type: "string" }, probabilities: { type: "object", additionalProperties: { type: "number" } } }
+      } } }
+    };
+    const prompt = `Context:
+"""
+${context}
+"""
+
+Questions:
+${qs.map(describe2).join("\n\n")}
+
+Return one entry per question key, with a probability for every allowed answer.`;
+    return { model, schema, prompt };
+  },
+  // `claude -p` instead of HTTP. Its outcome is wrapped as a Response so decide()'s deadline,
+  // error classification, validation and usage log apply unchanged. No retries: each try uses quota.
+  async exec(body, signal) {
+    const { model, schema, prompt } = JSON.parse(body);
+    const args2 = [
+      "-p",
+      "--model",
+      model,
+      "--output-format",
+      "json",
+      "--json-schema",
+      JSON.stringify(schema),
+      "--system-prompt",
+      SYSTEM,
+      "--setting-sources",
+      "",
+      "--strict-mcp-config",
+      "--tools",
+      "",
+      "--disable-slash-commands",
+      "--no-session-persistence",
+      "--effort",
+      "low"
+    ];
+    const r = await runClaude(args2, prompt, signal);
+    let json = null;
+    try {
+      json = JSON.parse(r.stdout);
+    } catch {
+    }
+    if (r.code === 0 && json && !json.is_error) return new Response(r.stdout, { status: 200 });
+    const msg = (json?.result ?? r.stderr ?? "").trim().slice(0, 300) || `claude exited with code ${r.code}`;
+    const status2 = json?.api_error_status ?? (/log ?in|auth|credential/i.test(msg) ? 401 : /limit|quota/i.test(msg) ? 429 : 500);
+    return new Response(JSON.stringify({ error: { message: msg } }), { status: status2 });
+  },
+  parse(json, qs) {
+    const r = Output.safeParse(json);
+    if (!r.success || !r.data.structured_output) throw new InvalidResponse(`claude -p returned no structured answers${r.success ? "" : `: ${prettifyError(r.error)}`}`);
+    const byKey = new Map(r.data.structured_output.answers.map((a) => [a.key, a.probabilities]));
+    const answers = qs.map((q) => {
+      const raw = byKey.get(q.key);
+      if (!raw) throw new InvalidResponse(`Claude gave no answer for ${q.key}`);
+      const names = allowed(q);
+      const stray = Object.keys(raw).find((k) => !names.includes(k));
+      if (stray) throw new InvalidResponse(`Claude answered ${q.key} with "${stray}", which is not an allowed answer`);
+      const total = names.reduce((s, n) => s + (raw[n] ?? 0), 0);
+      if (total <= 0) throw new InvalidResponse(`Claude gave ${q.key} no probability mass`);
+      const p = Object.fromEntries(names.map((n) => [n, (raw[n] ?? 0) / total]));
+      if (q.type === "binary") return { type: "binary", probability_true: p.true };
+      const top = names.reduce((a, b) => p[b] > p[a] ? b : a);
+      if (q.type === "choice") return { type: "choice", choice: top, probabilities: p };
+      return { type: "score", expected_level: names.reduce((s, n, i) => s + i * p[n], 0), probabilities: p };
+    });
+    const u = r.data.usage ?? {};
+    return {
+      model: Object.keys(r.data.modelUsage ?? {})[0] ?? "claude",
+      answers,
+      usage: {
+        input_tokens: (u.input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0),
+        output_tokens: u.output_tokens
+      }
+    };
+  },
+  classify(status2) {
+    if (status2 === 401 || status2 === 403) return { kind: "auth", retryable: false };
+    if (status2 === 429) return { kind: "quota", retryable: false };
+    return { kind: "overloaded", retryable: false };
+  }
+};
+
 // src/decide.ts
-var ADAPTERS = { jev, openrouter: jevOpenRouter, openai };
-var PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1 };
+var ADAPTERS = { jev, openrouter: jevOpenRouter, openai, claude };
+var PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1, claude: 0 };
 var MAX_ATTEMPTS = 3;
 var MAX_WIRE_QUESTIONS = 40;
 var DEFAULT_RANK_LEVELS = [
@@ -7035,12 +7192,27 @@ var DEFAULT_RANK_LEVELS = [
   { label: "highly relevant" },
   { label: "best match" }
 ];
+var SELF_REPORTED_NOTE = "Probabilities are Claude's self-reported estimates, not model probabilities. Decision APIs (jev, openai) return real ones.";
 var CALIBRATION_NOTE = "Probabilities are the provider's estimates; they have not been verified as calibrated for your task.";
 var unset = (v) => v === void 0 || v.trim() === "" || v.includes("${");
 function loadConfig(env = process.env) {
   const provider = env.DECISIONKIT_PROVIDER?.trim();
-  if (unset(provider)) return { error: `No provider selected. Set DECISIONKIT_PROVIDER to "jev", "openrouter" or "openai" (in Claude Code: the plugin's provider setting).` };
-  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev", "openrouter" or "openai", got "${provider}".` };
+  if (unset(provider)) return { error: `No provider selected. Set DECISIONKIT_PROVIDER to "claude", "jev", "openrouter" or "openai" (in Claude Code: the plugin's provider setting).` };
+  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai" && provider !== "claude") return { error: `DECISIONKIT_PROVIDER must be "claude", "jev", "openrouter" or "openai", got "${provider}".` };
+  let timeoutMs = provider === "claude" ? 3e4 : 15e3;
+  if (!unset(env.DECISIONKIT_TIMEOUT_MS)) {
+    timeoutMs = Number(env.DECISIONKIT_TIMEOUT_MS);
+    if (!Number.isInteger(timeoutMs) || timeoutMs < 1e3 || timeoutMs > 6e4) return { error: "DECISIONKIT_TIMEOUT_MS must be an integer from 1000 to 60000." };
+  }
+  const common = {
+    timeoutMs,
+    usageLog: !/^(false|0|no|off)$/i.test(env.DECISIONKIT_USAGE_LOG?.trim() ?? ""),
+    dataDir: dataDir(env)
+  };
+  if (provider === "claude") {
+    if (!onPath("claude", env)) return { error: 'Provider is "claude" but the claude CLI is not on PATH. Install Claude Code and log in, or pick another provider.' };
+    return { provider, apiKey: "", baseUrl: "", model: unset(env.DECISIONKIT_MODEL) ? claude.defaultModel : env.DECISIONKIT_MODEL.trim(), ...common };
+  }
   const keyVar = { jev: "DECISIONKIT_TYPESAFE_API_KEY", openrouter: "DECISIONKIT_OPENROUTER_API_KEY", openai: "DECISIONKIT_OPENAI_API_KEY" }[provider];
   const apiKey = env[keyVar];
   if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY / OPENROUTER_API_KEY are deliberately ignored.` };
@@ -7050,20 +7222,23 @@ function loadConfig(env = process.env) {
     if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(u)) return { error: "DECISIONKIT_BASE_URL may only point at http://127.0.0.1 or http://localhost." };
     baseUrl = u;
   }
-  let timeoutMs = 15e3;
-  if (!unset(env.DECISIONKIT_TIMEOUT_MS)) {
-    timeoutMs = Number(env.DECISIONKIT_TIMEOUT_MS);
-    if (!Number.isInteger(timeoutMs) || timeoutMs < 1e3 || timeoutMs > 6e4) return { error: "DECISIONKIT_TIMEOUT_MS must be an integer from 1000 to 60000." };
-  }
   return {
     provider,
     apiKey: apiKey.trim(),
     model: unset(env.DECISIONKIT_MODEL) ? ADAPTERS[provider].defaultModel : env.DECISIONKIT_MODEL.trim(),
     baseUrl,
-    timeoutMs,
-    usageLog: !/^(false|0|no|off)$/i.test(env.DECISIONKIT_USAGE_LOG?.trim() ?? ""),
-    dataDir: dataDir(env)
+    ...common
   };
+}
+function onPath(bin, env) {
+  return (env.PATH ?? "").split(delimiter).some((d) => {
+    try {
+      accessSync(join(d, bin), constants.X_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  });
 }
 function dataDir(env = process.env) {
   if (!unset(env.CLAUDE_PLUGIN_DATA)) return env.CLAUDE_PLUGIN_DATA;
@@ -7110,11 +7285,12 @@ Candidate: ${c.text}`, levels: q.levels ?? DEFAULT_RANK_LEVELS });
     let res;
     let text2;
     try {
-      res = await deps.fetch(cfg.baseUrl + adapter.path, {
+      const signal = AbortSignal.timeout(Math.max(1, Math.ceil(deadline - deps.now())));
+      res = adapter.exec ? await adapter.exec(body, signal) : await deps.fetch(cfg.baseUrl + adapter.path, {
         method: "POST",
         headers: { authorization: `Bearer ${cfg.apiKey}`, "content-type": "application/json" },
         body,
-        signal: AbortSignal.timeout(Math.max(1, Math.ceil(deadline - deps.now())))
+        signal
       });
       text2 = await res.text();
     } catch (e) {
@@ -7210,7 +7386,7 @@ Candidate: ${c.text}`, levels: q.levels ?? DEFAULT_RANK_LEVELS });
         error: { kind: "refused", retryable: false, message: `${adapter.label} declined to answer: ${[...new Set(refused)].join(", ")}. No decision was made for those questions.` }
       };
     }
-    const notes = [`Sent to ${adapter.label}.`, CALIBRATION_NOTE];
+    const notes = [`Sent to ${adapter.label}.`, cfg.provider === "claude" ? SELF_REPORTED_NOTE : CALIBRATION_NOTE];
     if (cfg.provider === "openai" && req.questions.some((q) => q.type === "binary" && q.criteria)) notes.push("Binary criteria were appended to the instructions text (OpenAI predicates have no criteria field).");
     if (req.questions.some((q) => q.type === "rank")) notes.push("Rank is derived from independent per-candidate scores; treat close values as ties.");
     return {
@@ -7230,18 +7406,18 @@ Candidate: ${c.text}`, levels: q.levels ?? DEFAULT_RANK_LEVELS });
 function invariantError(q, a) {
   if (a.type === "binary") return null;
   if (a.type === "refused") return null;
-  const allowed = q.type === "choice" ? q.options.map((o) => o.value) : q.type === "score" ? q.levels.map((l) => l.label) : [];
+  const allowed2 = q.type === "choice" ? q.options.map((o) => o.value) : q.type === "score" ? q.levels.map((l) => l.label) : [];
   const probs = Object.entries(a.probabilities);
-  const stray = probs.find(([k]) => !allowed.includes(k));
+  const stray = probs.find(([k]) => !allowed2.includes(k));
   if (stray) return `has a probability for "${stray[0]}", which is not one of the supplied ${q.type === "choice" ? "options" : "levels"}`;
   const sum = probs.reduce((s, [, p]) => s + p, 0);
   if (Math.abs(sum - 1) > Math.max(0.02, probs.length * 5e-3)) return `has probabilities summing to ${sum.toFixed(3)}, not 1`;
-  if (a.type === "choice" && !allowed.includes(a.choice)) return `chose "${a.choice}", which is not one of the supplied options`;
-  if (a.type === "score" && (a.expected_level < 0 || a.expected_level > allowed.length - 1)) return `has expected level ${a.expected_level} outside 0..${allowed.length - 1}`;
+  if (a.type === "choice" && !allowed2.includes(a.choice)) return `chose "${a.choice}", which is not one of the supplied options`;
+  if (a.type === "score" && (a.expected_level < 0 || a.expected_level > allowed2.length - 1)) return `has expected level ${a.expected_level} outside 0..${allowed2.length - 1}`;
   return null;
 }
 function cost(provider, usage2) {
-  if (!usage2) return null;
+  if (!usage2 || provider === "claude") return null;
   return usage2.cost ?? usage2.input_tokens * PRICES[provider] / 1e6;
 }
 var logFile = (cfg) => join(cfg.dataDir, "usage.jsonl");
@@ -7261,7 +7437,10 @@ async function status(cfg, env, ping, deps = realDeps) {
   Object.assign(out, { ready: true, provider: ADAPTERS[cfg.provider].label, model: cfg.model, timeout_ms: cfg.timeoutMs, usage_log: cfg.usageLog ? logFile(cfg) : "off" });
   if (ping) {
     const t = deps.now();
-    try {
+    if (cfg.provider === "claude") {
+      const r = await runClaude(["--version"], "", AbortSignal.timeout(1e4)).catch((e) => ({ code: -1, stdout: "", stderr: e.name }));
+      out.ping = { ok: r.code === 0, cli: r.stdout.trim() || r.stderr.trim(), latency_ms: deps.now() - t };
+    } else try {
       const res = await deps.fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), { headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5e3) });
       out.ping = { ok: res.ok, status: res.status, latency_ms: deps.now() - t };
     } catch (e) {
@@ -7314,8 +7493,8 @@ Options:
                       the formatted view at a terminal, and plain output when piped.
 
 Exit codes: 0 = true / confident, 1 = false / below threshold, 2 = error.
-Configure with DECISIONKIT_PROVIDER (jev | openrouter | openai) and that provider's
-DECISIONKIT_*_API_KEY. Your text is sent to that provider.`;
+Configure with DECISIONKIT_PROVIDER: claude (uses your Claude Code login, no key) or
+jev | openrouter | openai with that provider's DECISIONKIT_*_API_KEY. Your text is sent to that provider.`;
 async function runCli(argv) {
   let parsed;
   try {
@@ -7347,7 +7526,7 @@ async function runCli(argv) {
   const r = await decide({ context, questions: [q] }, cfg);
   const pretty = !opt.json && !opt.plain && (opt.pretty || !!process.stdout.isTTY);
   if (!opt.quiet && r.ok && !pretty) {
-    process.stderr.write(`decisionkit: sent to ${ADAPTERS[r.provider].label} (${r.model}) \xB7 ${r.latency_ms} ms \xB7 $${(r.estimated_cost_usd ?? 0).toFixed(6)}
+    process.stderr.write(`decisionkit: sent to ${ADAPTERS[r.provider].label} (${r.model}) \xB7 ${r.latency_ms} ms \xB7 ${price(r.estimated_cost_usd)}
 `);
   }
   if (!r.ok) {
@@ -7361,7 +7540,7 @@ async function runCli(argv) {
   if (pretty) {
     const code = exitCode(a, threshold);
     console.log(render(question, a, items, threshold));
-    if (!opt.quiet) process.stderr.write(`  ${dim(`sent to ${ADAPTERS[r.provider].label} \xB7 ${r.model} \xB7 ${fmtMs(r.latency_ms)} \xB7 $${(r.estimated_cost_usd ?? 0).toFixed(6)}`)}
+    if (!opt.quiet) process.stderr.write(`  ${dim(`sent to ${ADAPTERS[r.provider].label} \xB7 ${r.model} \xB7 ${fmtMs(r.latency_ms)} \xB7 ${price(r.estimated_cost_usd)}`)}
 
 `);
     return code;
@@ -7398,6 +7577,7 @@ Run "decisionkit --help" for usage.
   return 2;
 }
 var round = (n) => Math.round(n * 1e3) / 1e3;
+var price = (usd) => usd === null ? "your Claude plan" : `$${usd.toFixed(6)}`;
 async function readStdin() {
   let s = "";
   for await (const chunk of process.stdin) s += chunk;
@@ -13429,9 +13609,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       const rhs = this.rhs === void 0 ? "" : ` = ${this.rhs}`;
       return `${varKind} ${this.name}${rhs};` + _n;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       if (!names[this.name.str]) return;
-      if (this.rhs) this.rhs = optimizeExpr(this.rhs, names, constants);
+      if (this.rhs) this.rhs = optimizeExpr(this.rhs, names, constants2);
       return this;
     }
     get names() {
@@ -13448,9 +13628,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     render({ _n }) {
       return `${this.lhs} = ${this.rhs};` + _n;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       if (this.lhs instanceof code_1.Name && !names[this.lhs.str] && !this.sideEffects) return;
-      this.rhs = optimizeExpr(this.rhs, names, constants);
+      this.rhs = optimizeExpr(this.rhs, names, constants2);
       return this;
     }
     get names() {
@@ -13509,8 +13689,8 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     optimizeNodes() {
       return `${this.code}` ? this : void 0;
     }
-    optimizeNames(names, constants) {
-      this.code = optimizeExpr(this.code, names, constants);
+    optimizeNames(names, constants2) {
+      this.code = optimizeExpr(this.code, names, constants2);
       return this;
     }
     get names() {
@@ -13536,12 +13716,12 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       }
       return nodes.length > 0 ? this : void 0;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       const { nodes } = this;
       let i = nodes.length;
       while (i--) {
         const n = nodes[i];
-        if (n.optimizeNames(names, constants)) continue;
+        if (n.optimizeNames(names, constants2)) continue;
         subtractNames(names, n.names);
         nodes.splice(i, 1);
       }
@@ -13588,11 +13768,11 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       if (cond === false || !this.nodes.length) return void 0;
       return this;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       var _a3;
-      this.else = (_a3 = this.else) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants);
-      if (!(super.optimizeNames(names, constants) || this.else)) return;
-      this.condition = optimizeExpr(this.condition, names, constants);
+      this.else = (_a3 = this.else) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants2);
+      if (!(super.optimizeNames(names, constants2) || this.else)) return;
+      this.condition = optimizeExpr(this.condition, names, constants2);
       return this;
     }
     get names() {
@@ -13614,9 +13794,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     render(opts) {
       return `for(${this.iteration})` + super.render(opts);
     }
-    optimizeNames(names, constants) {
-      if (!super.optimizeNames(names, constants)) return;
-      this.iteration = optimizeExpr(this.iteration, names, constants);
+    optimizeNames(names, constants2) {
+      if (!super.optimizeNames(names, constants2)) return;
+      this.iteration = optimizeExpr(this.iteration, names, constants2);
       return this;
     }
     get names() {
@@ -13651,9 +13831,9 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     render(opts) {
       return `for(${this.varKind} ${this.name} ${this.loop} ${this.iterable})` + super.render(opts);
     }
-    optimizeNames(names, constants) {
-      if (!super.optimizeNames(names, constants)) return;
-      this.iterable = optimizeExpr(this.iterable, names, constants);
+    optimizeNames(names, constants2) {
+      if (!super.optimizeNames(names, constants2)) return;
+      this.iterable = optimizeExpr(this.iterable, names, constants2);
       return this;
     }
     get names() {
@@ -13692,11 +13872,11 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       (_b = this.finally) === null || _b === void 0 || _b.optimizeNodes();
       return this;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       var _a3, _b;
-      super.optimizeNames(names, constants);
-      (_a3 = this.catch) === null || _a3 === void 0 || _a3.optimizeNames(names, constants);
-      (_b = this.finally) === null || _b === void 0 || _b.optimizeNames(names, constants);
+      super.optimizeNames(names, constants2);
+      (_a3 = this.catch) === null || _a3 === void 0 || _a3.optimizeNames(names, constants2);
+      (_b = this.finally) === null || _b === void 0 || _b.optimizeNames(names, constants2);
       return this;
     }
     get names() {
@@ -13945,7 +14125,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
   function addExprNames(names, from) {
     return from instanceof code_1._CodeOrName ? addNames(names, from.names) : names;
   }
-  function optimizeExpr(expr, names, constants) {
+  function optimizeExpr(expr, names, constants2) {
     if (expr instanceof code_1.Name) return replaceName(expr);
     if (!canOptimize(expr)) return expr;
     return new code_1._Code(expr._items.reduce((items, c) => {
@@ -13955,13 +14135,13 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return items;
     }, []));
     function replaceName(n) {
-      const c = constants[n.str];
+      const c = constants2[n.str];
       if (c === void 0 || names[n.str] !== 1) return n;
       delete names[n.str];
       return c;
     }
     function canOptimize(e) {
-      return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants[c.str] !== void 0);
+      return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants2[c.str] !== void 0);
     }
   }
   function subtractNames(names, from) {
@@ -21575,7 +21755,7 @@ var StdioServerTransport = class {
 };
 
 // src/server.ts
-var VERSION = "0.3.0";
+var VERSION = "0.4.0";
 var INSTRUCTIONS = `decisionkit sends a text context plus typed questions to an EXTERNAL decision API
 (provider and model are named in every result) and returns probabilities.
 

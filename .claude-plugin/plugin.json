@@ -1,7 +1,7 @@
 {
   "name": "decisionkit",
   "displayName": "decisionkit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Provider-neutral decision tool: ask Jev (TypeSafe AI) or the OpenAI Decisions API closed-form questions and get probabilities back.",
   "author": {
     "name": "decisionkit contributors"
@@ -18,8 +18,9 @@
     "provider": {
       "type": "string",
       "title": "Decision provider",
-      "description": "Which external API receives your decision requests: jev (TypeSafe AI directly), openrouter (Jev served and billed by OpenRouter), or openai (OpenAI Decisions API, beta). Requests contain the context Claude writes into each call.",
+      "description": "Who answers: claude (your own Claude Code login, no extra key; probabilities are Claude's self-reported estimates), jev (TypeSafe AI), openrouter (Jev via OpenRouter) or openai (OpenAI Decisions API). The context Claude writes into each call is sent to that provider.",
       "options": [
+        "claude",
         "jev",
         "openrouter",
         "openai"

@@ -1,20 +1,21 @@
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { accessSync, appendFileSync, constants, mkdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import * as z from "zod/v4";
 import { jev, jevOpenRouter } from "./providers/jev.ts";
 import { openai } from "./providers/openai.ts";
+import { claude, runClaude } from "./providers/claude.ts";
 import {
   type Adapter, type Answer, type Compiled, type DecideResult, type ErrorKind, type Level,
   type ProviderName, type WireAnswer, DecideRequest, InvalidResponse,
 } from "./schema.ts";
 
-export const ADAPTERS: Record<ProviderName, Adapter> = { jev, openrouter: jevOpenRouter, openai };
+export const ADAPTERS: Record<ProviderName, Adapter> = { jev, openrouter: jevOpenRouter, openai, claude };
 
 // USD per 1M input tokens; neither provider charges for output. OpenAI is a lower
 // bound: regional and long-context multipliers are not modeled.
-export const PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1 } as const;
+export const PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1, claude: 0 } as const; // claude: no per-call price (cost() returns null)
 
 const MAX_ATTEMPTS = 3;
 const MAX_WIRE_QUESTIONS = 40; // after rank fan-out
@@ -22,6 +23,7 @@ const DEFAULT_RANK_LEVELS: Level[] = [
   { label: "irrelevant" }, { label: "slightly relevant" }, { label: "relevant" },
   { label: "highly relevant" }, { label: "best match" },
 ];
+const SELF_REPORTED_NOTE = "Probabilities are Claude's self-reported estimates, not model probabilities. Decision APIs (jev, openai) return real ones.";
 const CALIBRATION_NOTE = "Probabilities are the provider's estimates; they have not been verified as calibrated for your task.";
 
 export type Config = {
@@ -35,8 +37,25 @@ const unset = (v: string | undefined) => v === undefined || v.trim() === "" || v
 /** Reads only DECISIONKIT_* names, so an unrelated OPENAI_API_KEY in the shell is never billed. */
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config | { error: string } {
   const provider = env.DECISIONKIT_PROVIDER?.trim();
-  if (unset(provider)) return { error: "No provider selected. Set DECISIONKIT_PROVIDER to \"jev\", \"openrouter\" or \"openai\" (in Claude Code: the plugin's provider setting)." };
-  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev", "openrouter" or "openai", got "${provider}".` };
+  if (unset(provider)) return { error: "No provider selected. Set DECISIONKIT_PROVIDER to \"claude\", \"jev\", \"openrouter\" or \"openai\" (in Claude Code: the plugin's provider setting)." };
+  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai" && provider !== "claude") return { error: `DECISIONKIT_PROVIDER must be "claude", "jev", "openrouter" or "openai", got "${provider}".` };
+
+  let timeoutMs = provider === "claude" ? 30000 : 15000; // claude -p starts a process per call
+  if (!unset(env.DECISIONKIT_TIMEOUT_MS)) {
+    timeoutMs = Number(env.DECISIONKIT_TIMEOUT_MS);
+    if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 60000) return { error: "DECISIONKIT_TIMEOUT_MS must be an integer from 1000 to 60000." };
+  }
+  const common = {
+    timeoutMs,
+    usageLog: !/^(false|0|no|off)$/i.test(env.DECISIONKIT_USAGE_LOG?.trim() ?? ""),
+    dataDir: dataDir(env),
+  };
+
+  // No API key: answers come from the user's own Claude Code login.
+  if (provider === "claude") {
+    if (!onPath("claude", env)) return { error: "Provider is \"claude\" but the claude CLI is not on PATH. Install Claude Code and log in, or pick another provider." };
+    return { provider, apiKey: "", baseUrl: "", model: unset(env.DECISIONKIT_MODEL) ? claude.defaultModel : env.DECISIONKIT_MODEL!.trim(), ...common };
+  }
 
   const keyVar = ({ jev: "DECISIONKIT_TYPESAFE_API_KEY", openrouter: "DECISIONKIT_OPENROUTER_API_KEY", openai: "DECISIONKIT_OPENAI_API_KEY" } as const)[provider];
   const apiKey = env[keyVar];
@@ -50,21 +69,17 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config | { err
     baseUrl = u;
   }
 
-  let timeoutMs = 15000;
-  if (!unset(env.DECISIONKIT_TIMEOUT_MS)) {
-    timeoutMs = Number(env.DECISIONKIT_TIMEOUT_MS);
-    if (!Number.isInteger(timeoutMs) || timeoutMs < 1000 || timeoutMs > 60000) return { error: "DECISIONKIT_TIMEOUT_MS must be an integer from 1000 to 60000." };
-  }
-
   return {
     provider,
     apiKey: apiKey!.trim(),
     model: unset(env.DECISIONKIT_MODEL) ? ADAPTERS[provider].defaultModel : env.DECISIONKIT_MODEL!.trim(),
     baseUrl,
-    timeoutMs,
-    usageLog: !/^(false|0|no|off)$/i.test(env.DECISIONKIT_USAGE_LOG?.trim() ?? ""),
-    dataDir: dataDir(env),
+    ...common,
   };
+}
+
+function onPath(bin: string, env: NodeJS.ProcessEnv) {
+  return (env.PATH ?? "").split(delimiter).some((d) => { try { accessSync(join(d, bin), constants.X_OK); return true; } catch { return false; } });
 }
 
 export function dataDir(env: NodeJS.ProcessEnv = process.env) {
@@ -120,12 +135,15 @@ export async function decide(input: unknown, loaded: Config | { error: string },
     let res: Response;
     let text: string;
     try {
-      res = await deps.fetch(cfg.baseUrl + adapter.path, {
-        method: "POST",
-        headers: { authorization: `Bearer ${cfg.apiKey}`, "content-type": "application/json" },
-        body,
-        signal: AbortSignal.timeout(Math.max(1, Math.ceil(deadline - deps.now()))),
-      });
+      const signal = AbortSignal.timeout(Math.max(1, Math.ceil(deadline - deps.now())));
+      res = adapter.exec
+        ? await adapter.exec(body, signal)
+        : await deps.fetch(cfg.baseUrl + adapter.path, {
+            method: "POST",
+            headers: { authorization: `Bearer ${cfg.apiKey}`, "content-type": "application/json" },
+            body,
+            signal,
+          });
       text = await res.text(); // inside the try: the deadline can abort mid-body
     } catch (e) {
       const err = e as Error;
@@ -208,7 +226,7 @@ export async function decide(input: unknown, loaded: Config | { error: string },
       return { ok: false, provider: cfg.provider, request_id, answers,
         error: { kind: "refused", retryable: false, message: `${adapter.label} declined to answer: ${[...new Set(refused)].join(", ")}. No decision was made for those questions.` } };
     }
-    const notes = [`Sent to ${adapter.label}.`, CALIBRATION_NOTE];
+    const notes = [`Sent to ${adapter.label}.`, cfg.provider === "claude" ? SELF_REPORTED_NOTE : CALIBRATION_NOTE];
     if (cfg.provider === "openai" && req.questions.some((q) => q.type === "binary" && q.criteria)) notes.push("Binary criteria were appended to the instructions text (OpenAI predicates have no criteria field).");
     if (req.questions.some((q) => q.type === "rank")) notes.push("Rank is derived from independent per-candidate scores; treat close values as ties.");
     return {
@@ -234,7 +252,7 @@ function invariantError(q: Compiled, a: WireAnswer): string | null {
 }
 
 function cost(provider: ProviderName, usage?: { input_tokens: number; cost?: number }) {
-  if (!usage) return null;
+  if (!usage || provider === "claude") return null; // claude: counts toward the user's plan, not billed per call
   return usage.cost ?? (usage.input_tokens * PRICES[provider]) / 1e6; // provider-reported cost wins
 }
 
@@ -259,9 +277,13 @@ export async function status(cfg: Config | { error: string }, env: NodeJS.Proces
 
   Object.assign(out, { ready: true, provider: ADAPTERS[cfg.provider].label, model: cfg.model, timeout_ms: cfg.timeoutMs, usage_log: cfg.usageLog ? logFile(cfg) : "off" });
   if (ping) {
-    // A sibling GET .../models exists on every provider and consumes no tokens.
+    // A sibling GET .../models exists on every HTTP provider and consumes no tokens.
     const t = deps.now();
-    try {
+    if (cfg.provider === "claude") {
+      // No tokens either: just confirm the CLI runs.
+      const r = await runClaude(["--version"], "", AbortSignal.timeout(10000)).catch((e: Error) => ({ code: -1, stdout: "", stderr: e.name }));
+      out.ping = { ok: r.code === 0, cli: r.stdout.trim() || r.stderr.trim(), latency_ms: deps.now() - t };
+    } else try {
       const res = await deps.fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), { headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5000) });
       out.ping = { ok: res.ok, status: res.status, latency_ms: deps.now() - t };
     } catch (e) {

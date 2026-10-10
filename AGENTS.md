@@ -17,6 +17,7 @@ decisionkit is a provider-neutral client for **decision APIs** (OpenAI Decisions
 | `src/schema.ts` | Zod request schema, the neutral `Answer`/`DecideResult` types, and the `Adapter` contract |
 | `src/providers/jev.ts` | Jev adapter (`jev`), plus `jevOpenRouter`: the same API at OpenRouter's path |
 | `src/providers/openai.ts` | OpenAI Decisions adapter |
+| `src/providers/claude.ts` | `claude` adapter: runs `claude -p` (the user's Claude Code login), with `exec()` in place of HTTP. Its probabilities are self-reported. |
 | `src/decide.ts` | Config loading, the `decide()` core (validation, rank fan‑out, deadline and retries, invariant checks, usage log), `status()`, the dated price table |
 | `src/server.ts` | `serve()`: MCP tools `decide` and `status`, the server instructions, connection pre‑warm |
 | `src/cli.ts` | `runCli()`: `binary`, `choice`, `score`, `rank`, `status` |
@@ -45,7 +46,7 @@ The tests need no API keys; they run against local mock HTTP servers. Node ≥ 2
 1. **Never report a decision that didn't happen.**
    - Any failure, refusal or invalid provider response is `ok: false`: MCP `isError`, CLI exit code `2`.
    - No canned answers, test modes or fallbacks in shipped code. Tests use localhost mocks through `DECISIONKIT_BASE_URL`, which only accepts loopback addresses.
-2. **Read config only from `DECISIONKIT_*` variables.** Never read a bare `OPENAI_API_KEY`, `TYPESAFE_API_KEY` or `OPENROUTER_API_KEY`: a key already in the user's shell must never be billed silently.
+2. **Read config only from `DECISIONKIT_*` variables.** Never read a bare `OPENAI_API_KEY`, `TYPESAFE_API_KEY` or `OPENROUTER_API_KEY`: a key already in the user's shell must never be billed silently. The `claude` provider uses the Claude Code login and must keep stripping `ANTHROPIC_API_KEY` / `ANTHROPIC_AUTH_TOKEN` from its child process for the same reason.
 3. **No silent provider fallback,** and no default provider. Both providers cost money.
 4. **Never log or echo keys or prompt content.**
    - Error messages pass through `scrub()`.

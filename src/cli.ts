@@ -22,8 +22,8 @@ Options:
                       the formatted view at a terminal, and plain output when piped.
 
 Exit codes: 0 = true / confident, 1 = false / below threshold, 2 = error.
-Configure with DECISIONKIT_PROVIDER (jev | openrouter | openai) and that provider's
-DECISIONKIT_*_API_KEY. Your text is sent to that provider.`;
+Configure with DECISIONKIT_PROVIDER: claude (uses your Claude Code login, no key) or
+jev | openrouter | openai with that provider's DECISIONKIT_*_API_KEY. Your text is sent to that provider.`;
 
 /** Returns the process exit code. */
 export async function runCli(argv: string[]): Promise<number> {
@@ -59,7 +59,7 @@ export async function runCli(argv: string[]): Promise<number> {
   // Formatted view only for humans at a terminal; pipes and scripts keep the plain contract.
   const pretty = !opt.json && !opt.plain && (opt.pretty || !!process.stdout.isTTY);
   if (!opt.quiet && r.ok && !pretty) {
-    process.stderr.write(`decisionkit: sent to ${ADAPTERS[r.provider].label} (${r.model}) · ${r.latency_ms} ms · $${(r.estimated_cost_usd ?? 0).toFixed(6)}\n`);
+    process.stderr.write(`decisionkit: sent to ${ADAPTERS[r.provider].label} (${r.model}) · ${r.latency_ms} ms · ${price(r.estimated_cost_usd)}\n`);
   }
   if (!r.ok) {
     if (opt.json) console.log(JSON.stringify(r, null, 2));
@@ -72,7 +72,7 @@ export async function runCli(argv: string[]): Promise<number> {
   if (pretty) {
     const code = exitCode(a, threshold);
     console.log(render(question, a, items, threshold));
-    if (!opt.quiet) process.stderr.write(`  ${dim(`sent to ${ADAPTERS[r.provider].label} · ${r.model} · ${fmtMs(r.latency_ms)} · $${(r.estimated_cost_usd ?? 0).toFixed(6)}`)}\n\n`);
+    if (!opt.quiet) process.stderr.write(`  ${dim(`sent to ${ADAPTERS[r.provider].label} · ${r.model} · ${fmtMs(r.latency_ms)} · ${price(r.estimated_cost_usd)}`)}\n\n`);
     return code;
   }
   if (a.type === "binary") {
@@ -109,6 +109,7 @@ function usage(msg: string) {
 }
 
 const round = (n: number) => Math.round(n * 1000) / 1000;
+const price = (usd: number | null) => (usd === null ? "your Claude plan" : `$${usd.toFixed(6)}`);
 
 async function readStdin() {
   let s = "";

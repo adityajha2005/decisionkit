@@ -1,6 +1,6 @@
 {
   "name": "@adxtya21/decisionkit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Fast, cheap, probability-scored decisions for coding agents, scripts and CI: a CLI and MCP server for the OpenAI Decisions API and Jev (TypeSafe AI)",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/server.mjs --legal-comments=none",
