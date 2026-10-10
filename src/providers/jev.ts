@@ -10,7 +10,8 @@ const Response = z.object({
     z.object({ type: z.literal("choice"), choice: z.string(), probabilities: z.record(z.string(), Prob), confidence: Prob.optional() }),
     z.object({ type: z.literal("score"), score: z.number(), probabilities: z.record(z.string(), Prob), confidence: Prob.optional() }),
   ])),
-  usage: z.object({ input_tokens: z.number().int().nonnegative(), output_tokens: z.number().int().nonnegative().optional() }),
+  // OpenRouter adds usage.cost (USD). It is used in place of the price table when present.
+  usage: z.object({ input_tokens: z.number().int().nonnegative(), output_tokens: z.number().int().nonnegative().optional(), cost: z.number().nonnegative().optional() }),
 });
 
 const levelText = (l: { label: string; description?: string }) => (l.description ? `${l.label}: ${l.description}` : l.label);
@@ -47,6 +48,7 @@ export const jev: Adapter = {
 
   classify(status) {
     if (status === 401 || status === 403) return { kind: "auth", retryable: false };
+    if (status === 402) return { kind: "quota", retryable: false }; // OpenRouter: out of credits
     if (status === 429) return { kind: "rate_limited", retryable: true };
     if (status === 529 || status >= 500) return { kind: "overloaded", retryable: true };
     return { kind: "invalid_request", retryable: false }; // 422 and other 4xx
@@ -63,3 +65,13 @@ function byLabel(p: Record<string, number>, q: Extract<Compiled, { type: "score"
   }
   return out;
 }
+
+// Same Jev System One API, served by OpenRouter and billed to an OpenRouter key.
+// https://openrouter.ai/docs/guides/community/jev (verified 2026-10-10)
+export const jevOpenRouter: Adapter = {
+  ...jev,
+  name: "openrouter",
+  label: "Jev via OpenRouter",
+  path: "/api/v1/systemone",
+  defaultModel: "~typesafe/jev-latest",
+};

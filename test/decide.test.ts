@@ -206,3 +206,24 @@ test("a body that fails mid-read is a typed error, not a throw", async () => {
   const r = await decide(choiceRequest(["billing", "technical"]), config("jev", { timeoutMs: 60000 }), f.deps);
   assert.equal(!r.ok && r.error.kind, "network");
 });
+
+test("openrouter: Jev's API at OpenRouter's path, OpenRouter key, provider-reported cost", async () => {
+  const c = loadConfig({ DECISIONKIT_PROVIDER: "openrouter", DECISIONKIT_OPENROUTER_API_KEY: "or-key", DECISIONKIT_TYPESAFE_API_KEY: "ts-key" });
+  assert.ok(!("error" in c));
+  assert.equal(c.baseUrl, "https://openrouter.ai");
+  assert.equal(c.apiKey, "or-key");
+  assert.equal(c.model, "~typesafe/jev-latest");
+  assert.ok("error" in loadConfig({ DECISIONKIT_PROVIDER: "openrouter", OPENROUTER_API_KEY: "ambient" }));
+
+  const f = fake([{ body: { ...JEV_CHOICE_RESPONSE, usage: { input_tokens: 318, output_tokens: 34, cost: 0.0000134 } } }]);
+  const r = await decide(choiceRequest(JEV_VALUES), config("openrouter", { model: "~typesafe/jev-latest" }), f.deps);
+  assert.equal(f.calls[0]!.url, "http://127.0.0.1:1/api/v1/systemone");
+  assert.equal(f.calls[0]!.body.model, "~typesafe/jev-latest");
+  assert.ok(r.ok);
+  assert.equal(r.provider, "openrouter");
+  assert.equal(r.estimated_cost_usd, 0.0000134);
+  assert.match(r.notes[0]!, /Jev via OpenRouter/);
+
+  const q = await decide(choiceRequest(JEV_VALUES), config("openrouter"), fake([{ status: 402, body: { error: { message: "Insufficient credits" } } }]).deps);
+  assert.equal(!q.ok && q.error.kind, "quota");
+});

@@ -21007,7 +21007,8 @@ var Response2 = object({
     object({ type: literal("choice"), choice: string2(), probabilities: record(string2(), Prob), confidence: Prob.optional() }),
     object({ type: literal("score"), score: number2(), probabilities: record(string2(), Prob), confidence: Prob.optional() })
   ])),
-  usage: object({ input_tokens: number2().int().nonnegative(), output_tokens: number2().int().nonnegative().optional() })
+  // OpenRouter adds usage.cost (USD). It is used in place of the price table when present.
+  usage: object({ input_tokens: number2().int().nonnegative(), output_tokens: number2().int().nonnegative().optional(), cost: number2().nonnegative().optional() })
 });
 var levelText = (l) => l.description ? `${l.label}: ${l.description}` : l.label;
 var jev = {
@@ -21039,6 +21040,7 @@ var jev = {
   },
   classify(status2) {
     if (status2 === 401 || status2 === 403) return { kind: "auth", retryable: false };
+    if (status2 === 402) return { kind: "quota", retryable: false };
     if (status2 === 429) return { kind: "rate_limited", retryable: true };
     if (status2 === 529 || status2 >= 500) return { kind: "overloaded", retryable: true };
     return { kind: "invalid_request", retryable: false };
@@ -21053,6 +21055,13 @@ function byLabel(p, q) {
   }
   return out;
 }
+var jevOpenRouter = {
+  ...jev,
+  name: "openrouter",
+  label: "Jev via OpenRouter",
+  path: "/api/v1/systemone",
+  defaultModel: "~typesafe/jev-latest"
+};
 
 // src/providers/openai.ts
 var Prob2 = number2().min(0).max(1);
@@ -21133,8 +21142,8 @@ function withCriteria(q) {
 }
 
 // src/decide.ts
-var ADAPTERS = { jev, openai };
-var PRICES = { as_of: "2026-10-10", jev: 0.042, openai: 0.1 };
+var ADAPTERS = { jev, openrouter: jevOpenRouter, openai };
+var PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1 };
 var MAX_ATTEMPTS = 3;
 var MAX_WIRE_QUESTIONS = 40;
 var DEFAULT_RANK_LEVELS = [
@@ -21148,12 +21157,12 @@ var CALIBRATION_NOTE = "Probabilities are the provider's estimates; they have no
 var unset = (v) => v === void 0 || v.trim() === "" || v.includes("${");
 function loadConfig(env = process.env) {
   const provider = env.DECISIONKIT_PROVIDER?.trim();
-  if (unset(provider)) return { error: `No provider selected. Set DECISIONKIT_PROVIDER to "jev" or "openai" (in Claude Code: the plugin's provider setting).` };
-  if (provider !== "jev" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev" or "openai", got "${provider}".` };
-  const keyVar = provider === "jev" ? "DECISIONKIT_TYPESAFE_API_KEY" : "DECISIONKIT_OPENAI_API_KEY";
+  if (unset(provider)) return { error: `No provider selected. Set DECISIONKIT_PROVIDER to "jev", "openrouter" or "openai" (in Claude Code: the plugin's provider setting).` };
+  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev", "openrouter" or "openai", got "${provider}".` };
+  const keyVar = { jev: "DECISIONKIT_TYPESAFE_API_KEY", openrouter: "DECISIONKIT_OPENROUTER_API_KEY", openai: "DECISIONKIT_OPENAI_API_KEY" }[provider];
   const apiKey = env[keyVar];
-  if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY are deliberately ignored.` };
-  let baseUrl = provider === "jev" ? "https://api.typesafe.ai" : "https://api.openai.com";
+  if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY / OPENROUTER_API_KEY are deliberately ignored.` };
+  let baseUrl = { jev: "https://api.typesafe.ai", openrouter: "https://openrouter.ai", openai: "https://api.openai.com" }[provider];
   if (!unset(env.DECISIONKIT_BASE_URL)) {
     const u = env.DECISIONKIT_BASE_URL.replace(/\/+$/, "");
     if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(u)) return { error: "DECISIONKIT_BASE_URL may only point at http://127.0.0.1 or http://localhost." };
@@ -21350,7 +21359,8 @@ function invariantError(q, a) {
   return null;
 }
 function cost(provider, usage) {
-  return usage ? usage.input_tokens * PRICES[provider] / 1e6 : null;
+  if (!usage) return null;
+  return usage.cost ?? usage.input_tokens * PRICES[provider] / 1e6;
 }
 var logFile = (cfg2) => join(cfg2.dataDir, "usage.jsonl");
 function logUsage(cfg2, rec) {
@@ -21370,7 +21380,7 @@ async function status(cfg2, env, ping, deps = realDeps) {
   if (ping) {
     const t = deps.now();
     try {
-      const res = await deps.fetch(`${cfg2.baseUrl}/v1/models`, { headers: { authorization: `Bearer ${cfg2.apiKey}` }, signal: AbortSignal.timeout(5e3) });
+      const res = await deps.fetch(cfg2.baseUrl + ADAPTERS[cfg2.provider].path.replace(/[^/]+$/, "models"), { headers: { authorization: `Bearer ${cfg2.apiKey}` }, signal: AbortSignal.timeout(5e3) });
       out.ping = { ok: res.ok, status: res.status, latency_ms: deps.now() - t };
     } catch (e) {
       out.ping = { ok: false, error: e.name };

@@ -3,18 +3,18 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import * as z from "zod/v4";
-import { jev } from "./providers/jev.ts";
+import { jev, jevOpenRouter } from "./providers/jev.ts";
 import { openai } from "./providers/openai.ts";
 import {
   type Adapter, type Answer, type Compiled, type DecideResult, type ErrorKind, type Level,
   type ProviderName, type WireAnswer, DecideRequest, InvalidResponse,
 } from "./schema.ts";
 
-export const ADAPTERS: Record<ProviderName, Adapter> = { jev, openai };
+export const ADAPTERS: Record<ProviderName, Adapter> = { jev, openrouter: jevOpenRouter, openai };
 
 // USD per 1M input tokens; neither provider charges for output. OpenAI is a lower
 // bound: regional and long-context multipliers are not modeled.
-export const PRICES = { as_of: "2026-10-10", jev: 0.042, openai: 0.1 } as const;
+export const PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1 } as const;
 
 const MAX_ATTEMPTS = 3;
 const MAX_WIRE_QUESTIONS = 40; // after rank fan-out
@@ -35,14 +35,14 @@ const unset = (v: string | undefined) => v === undefined || v.trim() === "" || v
 /** Reads only DECISIONKIT_* names, so an unrelated OPENAI_API_KEY in the shell is never billed. */
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config | { error: string } {
   const provider = env.DECISIONKIT_PROVIDER?.trim();
-  if (unset(provider)) return { error: "No provider selected. Set DECISIONKIT_PROVIDER to \"jev\" or \"openai\" (in Claude Code: the plugin's provider setting)." };
-  if (provider !== "jev" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev" or "openai", got "${provider}".` };
+  if (unset(provider)) return { error: "No provider selected. Set DECISIONKIT_PROVIDER to \"jev\", \"openrouter\" or \"openai\" (in Claude Code: the plugin's provider setting)." };
+  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev", "openrouter" or "openai", got "${provider}".` };
 
-  const keyVar = provider === "jev" ? "DECISIONKIT_TYPESAFE_API_KEY" : "DECISIONKIT_OPENAI_API_KEY";
+  const keyVar = ({ jev: "DECISIONKIT_TYPESAFE_API_KEY", openrouter: "DECISIONKIT_OPENROUTER_API_KEY", openai: "DECISIONKIT_OPENAI_API_KEY" } as const)[provider];
   const apiKey = env[keyVar];
-  if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY are deliberately ignored.` };
+  if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY / OPENROUTER_API_KEY are deliberately ignored.` };
 
-  let baseUrl = provider === "jev" ? "https://api.typesafe.ai" : "https://api.openai.com";
+  let baseUrl: string = ({ jev: "https://api.typesafe.ai", openrouter: "https://openrouter.ai", openai: "https://api.openai.com" } as const)[provider];
   if (!unset(env.DECISIONKIT_BASE_URL)) {
     // Test hook only: loopback, so a key can never be redirected to a third host.
     const u = env.DECISIONKIT_BASE_URL!.replace(/\/+$/, "");
@@ -233,8 +233,9 @@ function invariantError(q: Compiled, a: WireAnswer): string | null {
   return null;
 }
 
-function cost(provider: ProviderName, usage?: { input_tokens: number }) {
-  return usage ? (usage.input_tokens * PRICES[provider]) / 1e6 : null;
+function cost(provider: ProviderName, usage?: { input_tokens: number; cost?: number }) {
+  if (!usage) return null;
+  return usage.cost ?? (usage.input_tokens * PRICES[provider]) / 1e6; // provider-reported cost wins
 }
 
 const logFile = (cfg: { dataDir: string }) => join(cfg.dataDir, "usage.jsonl");
@@ -258,10 +259,10 @@ export async function status(cfg: Config | { error: string }, env: NodeJS.Proces
 
   Object.assign(out, { ready: true, provider: ADAPTERS[cfg.provider].label, model: cfg.model, timeout_ms: cfg.timeoutMs, usage_log: cfg.usageLog ? logFile(cfg) : "off" });
   if (ping) {
-    // GET /v1/models exists on both providers and consumes no tokens.
+    // A sibling GET .../models exists on every provider and consumes no tokens.
     const t = deps.now();
     try {
-      const res = await deps.fetch(`${cfg.baseUrl}/v1/models`, { headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5000) });
+      const res = await deps.fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), { headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5000) });
       out.ping = { ok: res.ok, status: res.status, latency_ms: deps.now() - t };
     } catch (e) {
       out.ping = { ok: false, error: (e as Error).name };

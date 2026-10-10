@@ -4,7 +4,7 @@ import type { ProviderName } from "../src/schema.ts";
 export const KEY = "sk-test-SECRET-1234567890";
 
 export const config = (provider: ProviderName, over: Partial<Config> = {}): Config => ({
-  provider, apiKey: KEY, model: provider === "jev" ? "jev-latest" : "gpt-6-luna",
+  provider, apiKey: KEY, model: provider === "openai" ? "gpt-6-luna" : provider === "jev" ? "jev-latest" : "~typesafe/jev-latest",
   baseUrl: "http://127.0.0.1:1", timeoutMs: 5000, usageLog: false, dataDir: "/nonexistent", ...over,
 });
 

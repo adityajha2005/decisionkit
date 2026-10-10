@@ -18,9 +18,10 @@
     "provider": {
       "type": "string",
       "title": "Decision provider",
-      "description": "Which external API receives your decision requests: jev (TypeSafe AI) or openai (OpenAI Decisions API, beta). Requests contain the context Claude writes into each call.",
+      "description": "Which external API receives your decision requests: jev (TypeSafe AI directly), openrouter (Jev served and billed by OpenRouter), or openai (OpenAI Decisions API, beta). Requests contain the context Claude writes into each call.",
       "options": [
         "jev",
+        "openrouter",
         "openai"
       ],
       "required": true
@@ -29,6 +30,12 @@
       "type": "string",
       "title": "TypeSafe (Jev) API key",
       "description": "Needed only when provider is jev. Create one at console.typesafe.ai/keys. Stored in your OS secure store.",
+      "sensitive": true
+    },
+    "openrouter_api_key": {
+      "type": "string",
+      "title": "OpenRouter API key",
+      "description": "Needed only when provider is openrouter. Stored in your OS secure store. Your shell's OPENROUTER_API_KEY is never used.",
       "sensitive": true
     },
     "openai_api_key": {
@@ -66,6 +73,7 @@
       "env": {
         "DECISIONKIT_PROVIDER": "${user_config.provider}",
         "DECISIONKIT_TYPESAFE_API_KEY": "${user_config.typesafe_api_key}",
+        "DECISIONKIT_OPENROUTER_API_KEY": "${user_config.openrouter_api_key}",
         "DECISIONKIT_OPENAI_API_KEY": "${user_config.openai_api_key}",
         "DECISIONKIT_MODEL": "${user_config.model}",
         "DECISIONKIT_TIMEOUT_MS": "${user_config.timeout_ms}",

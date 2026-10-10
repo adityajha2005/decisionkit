@@ -64,13 +64,13 @@ export type ErrorKind =
   | "config" | "invalid_request" | "auth" | "rate_limited" | "quota" | "overloaded"
   | "timeout" | "network" | "provider_response_invalid" | "refused";
 
-export type ProviderName = "jev" | "openai";
+export type ProviderName = "jev" | "openrouter" | "openai";
 
 export type DecideResult =
   | {
       ok: true; provider: ProviderName; model: string; request_id: string;
       latency_ms: number; attempts: number;
-      usage: { input_tokens: number; output_tokens?: number };
+      usage: { input_tokens: number; output_tokens?: number; cost?: number };
       estimated_cost_usd: number | null;
       answers: Record<string, Answer>;
       notes: string[];
@@ -88,7 +88,7 @@ export type Adapter = {
   defaultModel: string;
   compile(qs: Compiled[], context: string, model: string): unknown;
   /** Throws InvalidResponse when the body doesn't match the provider contract. */
-  parse(json: unknown, qs: Compiled[]): { model: string; answers: WireAnswer[]; usage: { input_tokens: number; output_tokens?: number } };
+  parse(json: unknown, qs: Compiled[]): { model: string; answers: WireAnswer[]; usage: { input_tokens: number; output_tokens?: number; cost?: number } };
   classify(status: number, body: unknown): { kind: ErrorKind; retryable: boolean };
 };
 

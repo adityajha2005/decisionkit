@@ -2,7 +2,8 @@
 
 A provider-neutral **decision tool** for Claude Code and any other MCP client. Your agent asks closed-form questions about a piece of text. A specialized decision API answers with probabilities:
 
-- **Jev** by TypeSafe AI — `POST api.typesafe.ai/v1/systemone`
+- **Jev** by TypeSafe AI — `POST api.typesafe.ai/v1/systemone`, with a TypeSafe key
+- **Jev via OpenRouter** — the same Jev API at `POST openrouter.ai/api/v1/systemone`, with an OpenRouter key and billed by OpenRouter
 - **OpenAI Decisions API** (public beta) — `POST api.openai.com/v1/decisions`
 
 > **Requires Node.js ≥ 20 on your `PATH`.** Claude Code's native installer doesn't include Node. If the server shows as failed in `/mcp`, this is the usual cause.
@@ -43,9 +44,9 @@ Then run `/plugin configure decisionkit@decisionkit` inside Claude Code (or pass
 
 | Setting | Notes |
 |---|---|
-| `provider` | `jev` or `openai` |
-| `typesafe_api_key` / `openai_api_key` | Only the selected provider's key is used. Your shell's `OPENAI_API_KEY` is **never** read. |
-| `model` | Blank means the default: `jev-latest` or `gpt-6-luna` |
+| `provider` | `jev`, `openrouter` or `openai` |
+| `typesafe_api_key` / `openrouter_api_key` / `openai_api_key` | Only the selected provider's key is used. Bare `OPENAI_API_KEY` / `OPENROUTER_API_KEY` from your shell are **never** read. |
+| `model` | Blank means the default: `jev-latest`, `~typesafe/jev-latest` (OpenRouter) or `gpt-6-luna` |
 | `timeout_ms` | Total time per decision, including retries. Default 15000. |
 | `usage_log` | Local JSONL of ids, timings, tokens and estimated cost. Never prompt content. |
 
@@ -65,8 +66,8 @@ npm i -g decisionkit@0.1.0
 
 In every client, decisionkit reads **only** `DECISIONKIT_*` variables:
 
-- `DECISIONKIT_PROVIDER`: `jev` or `openai`
-- `DECISIONKIT_TYPESAFE_API_KEY` or `DECISIONKIT_OPENAI_API_KEY`
+- `DECISIONKIT_PROVIDER`: `jev`, `openrouter` or `openai`
+- `DECISIONKIT_TYPESAFE_API_KEY`, `DECISIONKIT_OPENROUTER_API_KEY` or `DECISIONKIT_OPENAI_API_KEY`
 - `DECISIONKIT_MODEL`, `DECISIONKIT_TIMEOUT_MS`, `DECISIONKIT_USAGE_LOG` (optional)
 
 Put the key in your shell profile and reference it from the client config. Writing it into the config file stores it in plaintext.
@@ -81,7 +82,14 @@ command = "decisionkit"
 env = { DECISIONKIT_PROVIDER = "openai" }
 env_vars = ["DECISIONKIT_OPENAI_API_KEY"]
 startup_timeout_sec = 30
+
+# Optional. Interactive Codex asks before each call. Non-interactive `codex exec`
+# blocks MCP calls that need approval, so pre-approve here if you script it
+# (this sends context without a prompt).
+# [mcp_servers.decisionkit.tools.decide]
+# approval_mode = "approve"
 ```
+Tested with codex-cli 0.157.1 (2026-10-10): tool discovery, the input schema, and a `decide` call all work.
 </details>
 
 <details><summary><b>Cursor</b> — <code>~/.cursor/mcp.json</code></summary>
