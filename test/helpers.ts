@@ -19,7 +19,10 @@ export function fake(steps: Step[]) {
     calls.push({ url, init, body: init.body ? JSON.parse(String(init.body)) : undefined });
     const step = steps[Math.min(calls.length - 1, steps.length - 1)]!;
     if (step === "hang") {
-      return new Promise((_, reject) => init.signal!.addEventListener("abort", () => reject(init.signal!.reason)));
+      // A real hanging request holds an open socket; this keep-alive timer stands in for it.
+      // Without it, Node 22's test runner sees an idle event loop and fails pending tests.
+      const keepAlive = setInterval(() => {}, 1000);
+      return new Promise((_, reject) => init.signal!.addEventListener("abort", () => { clearInterval(keepAlive); reject(init.signal!.reason); }));
     }
     if (step instanceof Error) throw step;
     const text = typeof step.body === "string" ? step.body : JSON.stringify(step.body ?? {});
