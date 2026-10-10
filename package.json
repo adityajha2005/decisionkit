@@ -1,0 +1,42 @@
+{
+  "name": "decisionkit",
+  "version": "0.1.0",
+  "description": "Provider-neutral decision tool (Jev, OpenAI Decisions API) as an MCP server for Claude Code and any MCP client",
+  "scripts": {
+    "build": "esbuild src/server.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/server.mjs --legal-comments=none",
+    "typecheck": "tsc",
+    "test": "node --test \"test/*.test.ts\"",
+    "check": "npm run typecheck && npm test"
+  },
+  "keywords": [
+    "mcp",
+    "claude-code",
+    "decision",
+    "jev",
+    "openai"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1",
+    "@modelcontextprotocol/server": "2.3.1",
+    "@types/node": "26.6.5",
+    "esbuild": "0.28.2",
+    "typescript": "7.0.2",
+    "zod": "4.6.5"
+  },
+  "bin": {
+    "decisionkit": "dist/server.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adityajha2005/decisionkit.git"
+  },
+  "homepage": "https://github.com/adityajha2005/decisionkit#readme"
+}

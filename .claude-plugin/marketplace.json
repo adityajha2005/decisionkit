@@ -1,0 +1,14 @@
+{
+  "name": "decisionkit",
+  "description": "decisionkit: a provider-neutral decision tool for Claude Code.",
+  "owner": {
+    "name": "decisionkit contributors"
+  },
+  "plugins": [
+    {
+      "name": "decisionkit",
+      "source": "./",
+      "description": "Provider-neutral decision tool backed by Jev (TypeSafe AI) or the OpenAI Decisions API."
+    }
+  ]
+}
