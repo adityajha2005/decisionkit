@@ -1,7 +1,7 @@
 {
   "name": "@adxtya21/decisionkit",
   "version": "0.2.1",
-  "description": "Provider-neutral decision tool (Jev, OpenAI Decisions API) as an MCP server for Claude Code and any MCP client",
+  "description": "Fast, cheap, probability-scored decisions for coding agents, scripts and CI: a CLI and MCP server for the OpenAI Decisions API and Jev (TypeSafe AI)",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/server.mjs --legal-comments=none",
     "typecheck": "tsc",
@@ -11,10 +11,23 @@
   },
   "keywords": [
     "mcp",
+    "mcp-server",
+    "model-context-protocol",
     "claude-code",
-    "decision",
+    "claude-code-plugin",
+    "codex",
+    "cursor",
+    "ai-agents",
+    "llm",
+    "decision-api",
+    "classification",
+    "openai",
     "jev",
-    "openai"
+    "typesafe",
+    "openrouter",
+    "cli",
+    "ci",
+    "developer-tools"
   ],
   "license": "MIT",
   "type": "module",

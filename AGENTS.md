@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for anyone, human or coding agent, changing decisionkit. Read this before editing. `README.md` is for users; this file is for contributors.
+Instructions for anyone, human or coding agent, changing decisionkit. Read this before editing. `README.md` is for users; this file is for contributors. For setup, the PR checklist and the open to-do list, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## What this is
 
@@ -24,7 +24,7 @@ decisionkit is a provider-neutral client for **decision APIs** (OpenAI Decisions
 | `dist/server.mjs` | esbuild bundle. **Committed**, because plugin installs don't run `npm install`. |
 | `.claude-plugin/` | Plugin manifest (`userConfig`, `alwaysLoad`) and a single‑plugin marketplace |
 | `test/` | `node:test` suites: unit (`decide`, `schema`), MCP stdio end‑to‑end (`server`), CLI end‑to‑end (`cli`), and a version check |
-| `bench/` | Benchmark runner, task sets (v1: 20 tasks, v2: 100), committed results, `RESULTS.md` |
+| `bench/` | `run.ts` (runner), `tasks/` (v1: 20, v2: 100), `results/` (raw v2 results, committed), `RESULTS.md` |
 | `docs/ARCHITECTURE.md` | Design, verified provider contracts with sources, risk register, build status |
 
 Adapters are pure data mappers: `compile`, `parse`, `classify`. All I/O (fetch, timeout, retry, logging) lives in `decide.ts`. Keep it that way.
@@ -64,7 +64,7 @@ The tests need no API keys; they run against local mock HTTP servers. Node ≥ 2
 
 ## Benchmarks
 
-- Run only the task set you mean to: `--tasks tasks-v2.jsonl`. Results go to `bench/results-<set>-<system>-<date>.json` and are committed. Scan them for secrets first; they should only ever contain ids, timings and costs.
+- Run only the task set you mean to: `--tasks tasks-v2.jsonl`. Results go to `bench/results/results-<set>-<system>-<date>.json`. Commit only the ones `RESULTS.md` cites. Scan them for secrets first; they should only ever contain ids, timings and costs.
 - **Never relabel a task after seeing model answers.**
   - Flag ambiguous tasks and replace them in a new version, or re-check the labels blind.
   - v2 labels were checked by a blind annotator: it agreed on 99/100, and 11 debatable tasks were rewritten until a fresh blind check rated them clear.

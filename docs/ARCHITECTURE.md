@@ -247,29 +247,27 @@ sequenceDiagram
 ## 5. Repository structure
 
 ```
-decisionkit/
-├── .claude-plugin/
-│   ├── plugin.json        # manifest: userConfig, mcpServers, one command (/decisionkit:status)
-│   └── marketplace.json   # single-plugin marketplace, source "./" → `claude plugin marketplace add adityajha2005/decisionkit`
+decisionkit/                     (as built, v0.2.x; the original plan differed slightly)
+├── .claude-plugin/              plugin.json (userConfig, alwaysLoad, /decisionkit:status), marketplace.json
+├── .claude/CLAUDE.md            imports AGENTS.md for Claude Code
+├── .github/workflows/ci.yml     typecheck, tests, dist freshness, npm-pack e2e, plugin validate, Node 20/22 start
 ├── src/
-│   ├── schema.ts          # Zod: neutral request, answers, result, error kinds
-│   ├── providers/
-│   │   ├── jev.ts         # compile(req) → body, parse(json) → answers, mapError(status, body)
-│   │   └── openai.ts
-│   ├── decide.ts          # config(), decide(req, {fetch, now}) — timeout, retry, rank fan-out, usage log, price table
-│   └── server.ts          # McpServer + StdioServerTransport; tools: decide, status; server instructions
-├── dist/server.mjs        # esbuild single-file bundle (committed; CI fails if stale)
-├── test/                  # node:test, fixtures copied verbatim from provider docs
-├── bench/
-│   ├── tasks.jsonl        # labeled tasks
-│   └── run.ts
+│   ├── schema.ts                Zod request schema, neutral result types, Adapter contract
+│   ├── providers/jev.ts         Jev adapter + jevOpenRouter (same API via OpenRouter)
+│   ├── providers/openai.ts      OpenAI Decisions adapter
+│   ├── decide.ts                config, decide() core, status(), price table
+│   ├── server.ts                serve(): MCP tools decide + status
+│   ├── cli.ts                   runCli(): binary | choice | score | rank | status
+│   └── main.ts                  entry: no args → serve(), else → runCli()
+├── dist/server.mjs              esbuild bundle (committed; plugin installs run no npm install)
+├── test/                        node:test; unit, MCP stdio e2e, CLI e2e, version check
+├── bench/                       run.ts, gen_tasks_v2.py, tasks/, results/, RESULTS.md
 ├── docs/ARCHITECTURE.md
-├── package.json           # "bin": {"decisionkit": "dist/server.mjs"}, "files": ["dist"]. deps bundled, so the npm package has 0 runtime deps.
-│                          # devDeps: esbuild, typescript, @types/node, @modelcontextprotocol/server, @modelcontextprotocol/client, zod
-└── README.md              # install, data disclosure, uninstall, Windows note
+├── AGENTS.md  CONTRIBUTING.md  CHANGELOG.md  README.md  LICENSE
+└── package.json  tsconfig.json
 ```
 
-That is 5 source files and 2 runtime dependencies. No `src/index.ts`, no factory, no `cli.ts`.
+As built: 7 source files, with the 2 runtime dependencies bundled into one file. There is no `src/index.ts` and no factory. `cli.ts` was added in v0.2.0 for scripts and CI.
 
 *Alternative considered:* a monorepo with `core` / `mcp` / `cli` packages. It is rejected because there is one consumer today. The `decide()` boundary gives the same seam without package overhead.
 

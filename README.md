@@ -258,6 +258,7 @@ node --env-file=.env bench/run.ts --anthropic [--via-openrouter] --tasks tasks-v
 node bench/run.ts --claude --tasks tasks-v2.jsonl                                         # via claude -p
 ```
 
+- [`CONTRIBUTING.md`](CONTRIBUTING.md): setup, PR checklist and the open to-do list.
 - [`AGENTS.md`](AGENTS.md): conventions and hard rules for anyone (human or agent) changing the code.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): design, verified provider contracts, risk register.
 - [`CHANGELOG.md`](CHANGELOG.md): release history.

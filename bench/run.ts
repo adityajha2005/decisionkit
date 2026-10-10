@@ -1,7 +1,7 @@
 // Usage:
 //   DECISIONKIT_PROVIDER=jev DECISIONKIT_TYPESAFE_API_KEY=… DECISIONKIT_MODEL=jev-1.13.0 node bench/run.ts
 //   DECISIONKIT_PROVIDER=openai DECISIONKIT_OPENAI_API_KEY=… node bench/run.ts
-//   add --tasks tasks-v2.jsonl to run another task set (default tasks.jsonl)
+//   add --tasks tasks-v1.jsonl to run another set from bench/tasks/ (default tasks-v2.jsonl); results go to bench/results/
 //   node --env-file=.env bench/run.ts --anthropic  # baseline: same prompt straight to the Messages API (Haiku 5.5)
 //     add --via-openrouter to send it through OpenRouter (anthropic/claude-haiku-5.5) with DECISIONKIT_OPENROUTER_API_KEY
 //   node bench/run.ts --claude            # baseline: same tasks through `claude -p` (BENCH_CLAUDE_MODEL, default haiku)
@@ -19,9 +19,9 @@ type Task = { id: string; context: string; question: Question; label: string | b
 type Row = { id: string; type: string; correct: boolean | null; p_label?: number; latency_ms: number; cost_usd: number | null; error?: string };
 
 const ti = process.argv.indexOf("--tasks");
-const taskFile = ti > 0 ? process.argv[ti + 1]! : "tasks.jsonl";
+const taskFile = ti > 0 ? process.argv[ti + 1]! : "tasks-v2.jsonl";
 const taskSet = taskFile.replace(/^.*\//, "").replace(/\.jsonl$/, "");
-const tasks: Task[] = readFileSync(join(import.meta.dirname, taskFile.replace(/^.*\//, "")), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
+const tasks: Task[] = readFileSync(join(import.meta.dirname, "tasks", taskFile.replace(/^.*\//, "")), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
 const claude = process.argv.includes("--claude");
 // --anthropic: the same prompt sent straight to the Messages API (no Claude Code system prompt). Needs ANTHROPIC_API_KEY.
 const direct = process.argv.includes("--anthropic");
@@ -129,6 +129,6 @@ const summary = ["all", "binary", "choice", "score", "rank"].map((type) => {
 });
 console.table(summary);
 const model = direct ? DIRECT_MODEL : claude ? ([...resolvedModels].join(",") || CLAUDE_MODEL) : (cfg as { model: string }).model;
-const file = join(import.meta.dirname, `results-${taskSet}-${system}-${new Date().toISOString().slice(0, 10)}.json`);
+const file = join(import.meta.dirname, "results", `results-${taskSet}-${system}-${new Date().toISOString().slice(0, 10)}.json`);
 writeFileSync(file, JSON.stringify({ task_set: taskSet, system, model, date: new Date().toISOString(), summary, rows }, null, 2));
 console.log(`wrote ${file}`);

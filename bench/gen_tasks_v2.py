@@ -1,4 +1,4 @@
-# Generates bench/tasks-v2.jsonl: python3 bench/gen_tasks_v2.py bench/tasks-v2.jsonl
+# Generates the v2 task set: python3 bench/gen_tasks_v2.py bench/tasks/tasks-v2.jsonl
 # Labels were checked by a blind second annotator; 11 debatable tasks were rewritten.
 import json, sys
 T = []

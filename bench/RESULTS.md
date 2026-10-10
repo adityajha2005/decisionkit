@@ -1,13 +1,13 @@
 # Benchmark results (2026-10-10)
 
-The same tasks went to two decision APIs through decisionkit and to Claude Haiku 5.5 asked directly. The raw per-task results are in `results-*.json` next to this file.
+The same tasks went to two decision APIs through decisionkit and to Claude Haiku 5.5 asked directly. The raw per-task v2 results are in `results/`; the tasks are in `tasks/`.
 
 **Read this first:**
 - The tasks are hand-written software-engineering decisions, so they are not a general benchmark.
 - With n = 100, accuracy differences of a few points are noise. The 95% confidence intervals overlap.
 - Nothing here shows that one system is more accurate than another.
 
-## Task set v2: 100 tasks (`tasks-v2.jsonl`, the headline set)
+## Task set v2: 100 tasks (`tasks/tasks-v2.jsonl`, the headline set)
 
 There are 25 tasks of each type:
 - **binary:** breaking API change? needs a DB migration?
@@ -40,7 +40,7 @@ What the table shows:
   - Haiku direct: s13, i03, i07.
   - Severity scoring (s, i) is the hardest category for every system.
 
-## Task set v1: 20 tasks (`tasks.jsonl`, the first smoke test)
+## Task set v1: 20 tasks (`tasks/tasks-v1.jsonl`, the first smoke test; summary only)
 
 | System | Correct | Cost, 20 tasks | Median latency |
 |---|---|---|---|
