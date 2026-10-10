@@ -1,5 +1,7 @@
 # decisionkit
 
+[![CI](https://github.com/adityajha2005/decisionkit/actions/workflows/ci.yml/badge.svg)](https://github.com/adityajha2005/decisionkit/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/@adxtya21/decisionkit)](https://www.npmjs.com/package/@adxtya21/decisionkit) [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE) ![Node ≥ 20](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
+
 Fast, cheap, closed-form decisions for coding agents, scripts and CI. You ask a question about a piece of text: yes/no, pick one of a list, rate it on a scale, or rank candidates. A specialized **decision API** answers with **probabilities**, not paragraphs.
 
 decisionkit is provider-neutral. It talks to:
