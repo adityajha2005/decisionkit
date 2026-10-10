@@ -4,7 +4,7 @@ import * as z from "zod/v4";
 import { ADAPTERS, decide, loadConfig, status } from "./decide.ts";
 import { type DecideResult, DecideRequest } from "./schema.ts";
 
-export const VERSION = "0.2.1";
+export const VERSION = "0.3.0";
 
 // Loaded under Claude Code (always) and Codex, VS Code, Gemini CLI. Capped at 2,048 chars.
 const INSTRUCTIONS = `decisionkit sends a text context plus typed questions to an EXTERNAL decision API

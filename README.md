@@ -91,6 +91,10 @@ cat bug.txt | decisionkit rank "How relevant is this file to the bug?" "csv_writ
 - **`--threshold <p>`:**
   - `binary`: true only if `p_true ≥ p` (default 0.5).
   - `choice` / `score`: exit `1` if the top probability is below `p`.
+- **Two views:**
+  - At a terminal you get a formatted view: probability bars, the winner highlighted, and a dim provider/latency/cost footer.
+  - When the output is piped or captured, it is the plain one-line format shown above, so scripts never see formatting.
+  - Force either with `--pretty` or `--plain`. `NO_COLOR=1` turns off color.
 - **Other options:**
   - `--json` prints the full result.
   - `--quiet` hides the stderr disclosure line.
@@ -126,7 +130,7 @@ Then run `/plugin configure decisionkit@decisionkit` in Claude Code, or add `--c
 Install once, with a pinned version, so a new release never changes your tool silently:
 
 ```bash
-npm i -g @adxtya21/decisionkit@0.2.1
+npm i -g @adxtya21/decisionkit@0.3.0
 ```
 
 decisionkit reads **only** these variables:

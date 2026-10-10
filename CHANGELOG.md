@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 (2026-10-10)
+
+- **Formatted CLI view at a terminal:** the question as a header, a probability bar per option with the winner highlighted, and a dim footer with the provider, model, latency and cost.
+  - Piped or scripted output is unchanged (`bug 0.94`).
+  - `--plain` / `--pretty` force either view.
+  - `NO_COLOR` disables color.
+- `rank` bars use the absolute 0–4 relevance scale, so a weak winner never looks strong.
+
 ## 0.2.1 (2026-10-10)
 
 - Fix: when the usage log is off, `status` now reports `"logging off"` instead of totals from another process's shared log (found by an isolated install test of 0.2.0).

@@ -7310,6 +7310,8 @@ Options:
                       choice/score: exit 1 if the top probability is below p
   --json              print the full result as JSON
   --quiet             don't print which provider received the data (stderr)
+  --plain / --pretty  force the script-friendly or the formatted view. By default you get
+                      the formatted view at a terminal, and plain output when piped.
 
 Exit codes: 0 = true / confident, 1 = false / below threshold, 2 = error.
 Configure with DECISIONKIT_PROVIDER (jev | openrouter | openai) and that provider's
@@ -7320,7 +7322,7 @@ async function runCli(argv) {
     parsed = parseArgs({
       args: argv,
       allowPositionals: true,
-      options: { context: { type: "string" }, threshold: { type: "string" }, json: { type: "boolean" }, quiet: { type: "boolean" }, help: { type: "boolean", short: "h" } }
+      options: { context: { type: "string" }, threshold: { type: "string" }, json: { type: "boolean" }, quiet: { type: "boolean" }, plain: { type: "boolean" }, pretty: { type: "boolean" }, help: { type: "boolean", short: "h" } }
     });
   } catch (e) {
     return usage(e.message);
@@ -7343,7 +7345,8 @@ async function runCli(argv) {
   const context = opt.context ?? (process.stdin.isTTY ? "" : await readStdin());
   if (!context.trim()) return usage("no context: pipe text on stdin or pass --context");
   const r = await decide({ context, questions: [q] }, cfg);
-  if (!opt.quiet && r.ok) {
+  const pretty = !opt.json && !opt.plain && (opt.pretty || !!process.stdout.isTTY);
+  if (!opt.quiet && r.ok && !pretty) {
     process.stderr.write(`decisionkit: sent to ${ADAPTERS[r.provider].label} (${r.model}) \xB7 ${r.latency_ms} ms \xB7 $${(r.estimated_cost_usd ?? 0).toFixed(6)}
 `);
   }
@@ -7355,6 +7358,14 @@ async function runCli(argv) {
   }
   if (opt.json) console.log(JSON.stringify(r, null, 2));
   const a = r.answers.q;
+  if (pretty) {
+    const code = exitCode(a, threshold);
+    console.log(render(question, a, items, threshold));
+    if (!opt.quiet) process.stderr.write(`  ${dim(`sent to ${ADAPTERS[r.provider].label} \xB7 ${r.model} \xB7 ${fmtMs(r.latency_ms)} \xB7 $${(r.estimated_cost_usd ?? 0).toFixed(6)}`)}
+
+`);
+    return code;
+  }
   if (a.type === "binary") {
     const yes = a.probability_true >= (threshold ?? 0.5);
     if (!opt.json) console.log(`${yes} ${round(a.probability_true)}`);
@@ -7391,6 +7402,55 @@ async function readStdin() {
   let s = "";
   for await (const chunk of process.stdin) s += chunk;
   return s;
+}
+var useColor = () => !process.env.NO_COLOR && (!!process.stdout.isTTY || !!process.env.FORCE_COLOR);
+var paint = (code) => (s) => useColor() ? `\x1B[${code}m${s}\x1B[0m` : s;
+var bold = paint("1");
+var dim = paint("2");
+var green = paint("32");
+var boldGreen = paint("1;32");
+var red = paint("31");
+var BAR = 24;
+var bar = (frac, hi) => {
+  const n = Math.max(0, Math.min(BAR, Math.round(frac * BAR)));
+  return (hi ? green : dim)("\u2588".repeat(n)) + dim("\u2591".repeat(BAR - n));
+};
+var pct = (p) => `${Math.round(p * 100)}%`.padStart(4);
+var fit = (s, w) => s.length > w ? s.slice(0, w - 1) + "\u2026" : s.padEnd(w);
+var fmtMs = (ms) => ms >= 1e3 ? `${(ms / 1e3).toFixed(1)} s` : `${ms} ms`;
+function exitCode(a, threshold) {
+  if (a.type === "binary") return a.probability_true >= (threshold ?? 0.5) ? 0 : 1;
+  if (a.type === "choice" || a.type === "score") {
+    const top = a.type === "choice" ? a.choice : a.most_likely;
+    return threshold !== void 0 && (a.probabilities[top] ?? 0) < threshold ? 1 : 0;
+  }
+  return 0;
+}
+function render(question, a, items, threshold) {
+  const out = ["", `  ${bold(question)}`, ""];
+  if (a.type === "binary") {
+    const yes = a.probability_true >= (threshold ?? 0.5);
+    const mark = yes ? boldGreen("\u2714 yes") : red("\u2718 no ");
+    out.push(`  ${mark}  ${bar(a.probability_true, yes)} ${pct(a.probability_true)}  ${dim(`p(true) \xB7 threshold ${pct(threshold ?? 0.5).trim()}`)}`);
+  } else if (a.type === "choice" || a.type === "score") {
+    const top = a.type === "choice" ? a.choice : a.most_likely;
+    const labels = items;
+    const w = Math.min(28, Math.max(...labels.map((l) => l.length)));
+    for (const l of labels) {
+      const p = a.probabilities[l] ?? 0, hi = l === top;
+      out.push(`  ${hi ? boldGreen("\u25CF") : " "} ${hi ? bold(fit(l, w)) : fit(l, w)}  ${bar(p, hi)} ${pct(p)}`);
+    }
+    if (a.type === "score") out.push("", `  ${dim(`expected level ${a.expected_level.toFixed(1)} on a 0\u2013${items.length - 1} scale`)}`);
+  } else if (a.type === "rank") {
+    const max = 4;
+    const w = Math.min(44, Math.max(...items.map((t) => t.length)));
+    a.ranking.forEach((x, i) => {
+      const text2 = items[Number(x.candidate_id.slice(1))];
+      out.push(`  ${i === 0 ? boldGreen(String(i + 1)) : dim(String(i + 1))}  ${i === 0 ? bold(fit(text2, w)) : fit(text2, w)}  ${bar(x.expected_level / max, i === 0)} ${x.expected_level.toFixed(2).padStart(5)}`);
+    });
+  }
+  out.push("");
+  return out.join("\n");
 }
 
 // node_modules/@modelcontextprotocol/server/dist/chunk-Br0eD_fh.mjs
@@ -21515,7 +21575,7 @@ var StdioServerTransport = class {
 };
 
 // src/server.ts
-var VERSION = "0.2.1";
+var VERSION = "0.3.0";
 var INSTRUCTIONS = `decisionkit sends a text context plus typed questions to an EXTERNAL decision API
 (provider and model are named in every result) and returns probabilities.
 

@@ -88,3 +88,15 @@ test("errors exit 2 with a message, never a fake answer", async () => {
     assert.match(r.err, msg);
   }
 });
+
+test("formatted view (--pretty): bars and a highlighted winner; same exit codes; piped default stays plain", async () => {
+  const c = await run(["choice", "Kind?", "bug", "feature", "docs", "--pretty"], "x", { NO_COLOR: "1" });
+  assert.equal(c.code, 0);
+  assert.match(c.out, /● bug\s+█+░*\s+70%/);
+  assert.match(c.err, /sent to Jev \(TypeSafe AI\)/);
+  const b = await run(["binary", "q", "--pretty", "--threshold", "0.95"], "x", { NO_COLOR: "1" });
+  assert.equal(b.code, 1);
+  assert.match(b.out, /✘ no/);
+  assert.doesNotMatch(c.out, /\x1b\[/, "NO_COLOR disables escape codes");
+  assert.equal((await run(["choice", "Kind?", "bug", "feature"], "x")).out, "bug 0.7"); // piped: unchanged
+});
