@@ -82,6 +82,7 @@ cat bug.txt | decisionkit rank "How relevant is this file to the bug?" "csv_writ
 - **Full output:** `--json` prints the full result.
 - **Status:** `decisionkit status` shows the active provider, connectivity and usage totals.
 - **No arguments:** plain `decisionkit` runs as the MCP server for AI apps (below).
+- **Cold starts:** each CLI run is a new process, so it sets up a fresh connection to the provider. A live OpenAI call measured 852 ms this way, versus 135 ms on a warm connection. For many decisions, put several questions in one call, or keep the MCP server running.
 
 ## Install: other AI apps (any model)
 

@@ -6,7 +6,8 @@
     "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/server.mjs --legal-comments=none",
     "typecheck": "tsc",
     "test": "node --test \"test/*.test.ts\"",
-    "check": "npm run typecheck && npm test"
+    "check": "npm run typecheck && npm test",
+    "prepublishOnly": "npm run build && npm run check"
   },
   "keywords": [
     "mcp",
