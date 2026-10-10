@@ -1,6 +1,6 @@
 {
   "name": "@adxtya21/decisionkit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Provider-neutral decision tool (Jev, OpenAI Decisions API) as an MCP server for Claude Code and any MCP client",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/server.mjs --legal-comments=none",

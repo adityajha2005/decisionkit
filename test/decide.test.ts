@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { decide, loadConfig } from "../src/decide.ts";
+import { decide, loadConfig, status } from "../src/decide.ts";
 import { config, fake, KEY, JEV_CHOICE_RESPONSE, OPENAI_CHOICE_RESPONSE, choiceRequest } from "./helpers.ts";
 
 const JEV_VALUES = ["billing", "technical", "sales"];
@@ -226,4 +226,13 @@ test("openrouter: Jev's API at OpenRouter's path, OpenRouter key, provider-repor
 
   const q = await decide(choiceRequest(JEV_VALUES), config("openrouter"), fake([{ status: 402, body: { error: { message: "Insufficient credits" } } }]).deps);
   assert.equal(!q.ok && q.error.kind, "quota");
+});
+
+test("status: with the usage log off, reports that instead of the shared log's history", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "dkstatus-"));
+  await decide(choiceRequest(JEV_VALUES), config("jev", { usageLog: true, dataDir: dir }), fake([{ body: JEV_CHOICE_RESPONSE }]).deps);
+  const on = await status(config("jev", { usageLog: true, dataDir: dir }), {}, false);
+  assert.equal((on.usage as { calls: number }).calls, 1);
+  const off = await status(config("jev", { usageLog: false, dataDir: dir }), {}, false);
+  assert.equal(off.usage, "logging off");
 });

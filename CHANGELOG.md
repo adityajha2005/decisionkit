@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 (2026-10-10)
+
+- Fix: when the usage log is off, `status` now reports `"logging off"` instead of totals from another process's shared log (found by an isolated install test of 0.2.0).
+- The npm page now shows the restructured README (quickstart, troubleshooting).
+
 ## 0.2.0 (2026-10-10)
 
 First npm release, as `@adxtya21/decisionkit`. The installed command is `decisionkit`.

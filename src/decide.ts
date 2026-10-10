@@ -268,7 +268,8 @@ export async function status(cfg: Config | { error: string }, env: NodeJS.Proces
       out.ping = { ok: false, error: (e as Error).name };
     }
   }
-  out.usage = usageSummary(cfg.dataDir);
+  // With logging off, report that rather than another process's history from the shared log.
+  out.usage = cfg.usageLog ? usageSummary(cfg.dataDir) : "logging off";
   return out;
 }
 

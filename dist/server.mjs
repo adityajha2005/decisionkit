@@ -7268,7 +7268,7 @@ async function status(cfg, env, ping, deps = realDeps) {
       out.ping = { ok: false, error: e.name };
     }
   }
-  out.usage = usageSummary(cfg.dataDir);
+  out.usage = cfg.usageLog ? usageSummary(cfg.dataDir) : "logging off";
   return out;
 }
 function usageSummary(dir) {
@@ -21515,7 +21515,7 @@ var StdioServerTransport = class {
 };
 
 // src/server.ts
-var VERSION = "0.2.0";
+var VERSION = "0.2.1";
 var INSTRUCTIONS = `decisionkit sends a text context plus typed questions to an EXTERNAL decision API
 (provider and model are named in every result) and returns probabilities.
 

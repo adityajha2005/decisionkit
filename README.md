@@ -124,7 +124,7 @@ Then run `/plugin configure decisionkit@decisionkit` in Claude Code, or add `--c
 Install once, with a pinned version, so a new release never changes your tool silently:
 
 ```bash
-npm i -g @adxtya21/decisionkit@0.2.0
+npm i -g @adxtya21/decisionkit@0.2.1
 ```
 
 decisionkit reads **only** these variables:
