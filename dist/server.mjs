@@ -5,62 +5,14 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// node_modules/@modelcontextprotocol/server/dist/chunk-Br0eD_fh.mjs
-var __create = Object.create;
-var __defProp2 = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
-var __exportAll = (all, symbols) => {
-  let target = {};
-  for (var name in all) {
-    __defProp2(target, name, {
-      get: all[name],
-      enumerable: true
-    });
-  }
-  if (symbols) {
-    __defProp2(target, Symbol.toStringTag, { value: "Module" });
-  }
-  return target;
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
-      key = keys[i];
-      if (!__hasOwnProp.call(to, key) && key !== except) {
-        __defProp2(to, key, {
-          get: ((k) => from[k]).bind(null, key),
-          enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
-        });
-      }
-    }
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", {
-  value: mod,
-  enumerable: true
-}) : target, mod));
+// src/cli.ts
+import { parseArgs } from "node:util";
 
-// node_modules/@modelcontextprotocol/server/dist/dialects-DoSzNhcb.mjs
-var DRAFT_2020_12_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft/2020-12/schema", "http://json-schema.org/draft/2020-12/schema"]);
-var DRAFT_2019_09_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft/2019-09/schema", "http://json-schema.org/draft/2019-09/schema"]);
-var DRAFT_07_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft-07/schema", "http://json-schema.org/draft-07/schema"]);
-var DRAFT_06_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft-06/schema", "http://json-schema.org/draft-06/schema"]);
-function declares2019Dialect($schema) {
-  return typeof $schema === "string" && DRAFT_2019_09_URIS.has($schema.replace(/#$/, ""));
-}
-function declaredDialect(schema, remedy) {
-  if (!("$schema" in schema) || typeof schema.$schema !== "string") return "2020-12";
-  const declared = schema.$schema.replace(/#$/, "");
-  if (DRAFT_2020_12_URIS.has(declared)) return "2020-12";
-  if (DRAFT_2019_09_URIS.has(declared)) return "2019-09";
-  if (DRAFT_07_URIS.has(declared) || DRAFT_06_URIS.has(declared)) return "draft-7";
-  throw new Error(`JSON Schema declares an unsupported dialect ("$schema": "${schema.$schema.slice(0, 200)}"). The default validator supports JSON Schema 2020-12, 2019-09, draft-07, and draft-06; ${remedy}`);
-}
+// src/decide.ts
+import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 
 // node_modules/zod/v4/core/util.js
 var util_exports = {};
@@ -733,8 +685,8 @@ function parsedType(data) {
   }
   return t;
 }
-function issue(...args) {
-  const [iss, input, inst] = args;
+function issue(...args2) {
+  const [iss, input, inst] = args2;
   if (typeof iss === "string") {
     return {
       message: iss,
@@ -1352,20 +1304,20 @@ function anchor(source) {
   return new RegExp(`^${source}$`);
 }
 var date = /* @__PURE__ */ anchor(dateSource);
-function timeSource(args) {
+function timeSource(args2) {
   const hhmm = `(?:[01]\\d|2[0-3]):[0-5]\\d`;
-  const regex = typeof args.precision === "number" ? args.precision === -1 ? `${hhmm}` : args.precision === 0 ? `${hhmm}:[0-5]\\d` : `${hhmm}:[0-5]\\d\\.\\d{${args.precision}}` : args.seconds ? `${hhmm}:[0-5]\\d(?:\\.\\d+)?` : `${hhmm}(?::[0-5]\\d(?:\\.\\d+)?)?`;
+  const regex = typeof args2.precision === "number" ? args2.precision === -1 ? `${hhmm}` : args2.precision === 0 ? `${hhmm}:[0-5]\\d` : `${hhmm}:[0-5]\\d\\.\\d{${args2.precision}}` : args2.seconds ? `${hhmm}:[0-5]\\d(?:\\.\\d+)?` : `${hhmm}(?::[0-5]\\d(?:\\.\\d+)?)?`;
   return regex;
 }
-function time(args) {
-  return new RegExp(`^${timeSource(args)}$`);
+function time(args2) {
+  return new RegExp(`^${timeSource(args2)}$`);
 }
-function datetime(args) {
+function datetime(args2) {
   const opts = ["Z"];
-  if (args.offset)
+  if (args2.offset)
     opts.push(`([+-](?:[01]\\d|2[0-3]):[0-5]\\d)`);
-  const qualified = `${timeSource({ precision: args.precision, seconds: true })}(?:${opts.join("|")})`;
-  const timeRegex = args.local ? `${qualified}|${timeSource({ precision: args.precision })}` : qualified;
+  const qualified = `${timeSource({ precision: args2.precision, seconds: true })}(?:${opts.join("|")})`;
+  const timeRegex = args2.local ? `${qualified}|${timeSource({ precision: args2.precision })}` : qualified;
   return new RegExp(`^${dateSource}T(?:${timeRegex})$`);
 }
 var anyString = /^[\s\S]{0,}$/;
@@ -1699,10 +1651,10 @@ var $ZodCheckOverwrite = /* @__PURE__ */ $constructor("$ZodCheckOverwrite", (ins
 
 // node_modules/zod/v4/core/doc.js
 var Doc = class {
-  constructor(args = [], closed = {}) {
+  constructor(args2 = [], closed = {}) {
     this.content = [];
     this.indent = 0;
-    this.args = args;
+    this.args = args2;
     this.closed = closed;
   }
   // the compiler catches a child's throw and keeps writing into this doc, so the indent has to unwind with it
@@ -5884,11 +5836,11 @@ var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
     globalRegistry.add(cl, { description });
     return cl;
   },
-  meta(...args) {
-    if (args.length === 0)
+  meta(...args2) {
+    if (args2.length === 0)
       return globalRegistry.get(this);
     const cl = this.clone();
-    globalRegistry.add(cl, args[0]);
+    globalRegistry.add(cl, args2[0]);
     return cl;
   },
   isOptional() {
@@ -5897,8 +5849,8 @@ var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
   isNullable() {
     return this.safeParse(null).success;
   },
-  apply(fn, ...args) {
-    return args.length === 0 ? fn(this) : fn(this, ...args);
+  apply(fn, ...args2) {
+    return args2.length === 0 ? fn(this) : fn(this, ...args2);
   },
   // Overrides core's `~standard` to add `jsonSchema`. Must stay a prototype entry: redefining it per instance demotes instances to dictionary mode.
   get "~standard"() {
@@ -5986,29 +5938,29 @@ var _ZodString = /* @__PURE__ */ $constructor(
     minLength: (inst) => aggregateChecks(inst).minimum ?? null,
     maxLength: (inst) => aggregateChecks(inst).maximum ?? null
   }, {
-    regex(...args) {
-      return this.check(_regex(...args));
+    regex(...args2) {
+      return this.check(_regex(...args2));
     },
-    includes(...args) {
-      return this.check(_includes(...args));
+    includes(...args2) {
+      return this.check(_includes(...args2));
     },
-    startsWith(...args) {
-      return this.check(_startsWith(...args));
+    startsWith(...args2) {
+      return this.check(_startsWith(...args2));
     },
-    endsWith(...args) {
-      return this.check(_endsWith(...args));
+    endsWith(...args2) {
+      return this.check(_endsWith(...args2));
     },
-    min(...args) {
-      return this.check(_minLength(...args));
+    min(...args2) {
+      return this.check(_minLength(...args2));
     },
-    max(...args) {
-      return this.check(_maxLength(...args));
+    max(...args2) {
+      return this.check(_maxLength(...args2));
     },
-    length(...args) {
-      return this.check(_length(...args));
+    length(...args2) {
+      return this.check(_length(...args2));
     },
-    nonempty(...args) {
-      return this.check(_minLength(1, ...args));
+    nonempty(...args2) {
+      return this.check(_minLength(1, ...args2));
     },
     lowercase(params) {
       return this.check(_lowercase(params));
@@ -6019,8 +5971,8 @@ var _ZodString = /* @__PURE__ */ $constructor(
     trim() {
       return this.check(_trim());
     },
-    normalize(...args) {
-      return this.check(_normalize(...args));
+    normalize(...args2) {
+      return this.check(_normalize(...args2));
     },
     toLowerCase() {
       return this.check(_toLowerCase());
@@ -6474,14 +6426,14 @@ var ZodObject = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
   omit(mask) {
     return util_exports.omit(this, mask);
   },
-  partial(...args) {
-    return util_exports.partial(ZodOptional, this, args[0]);
+  partial(...args2) {
+    return util_exports.partial(ZodOptional, this, args2[0]);
   },
-  exactPartial(...args) {
-    return util_exports.partial(ZodExactOptional, this, args[0], "exactPartial");
+  exactPartial(...args2) {
+    return util_exports.partial(ZodExactOptional, this, args2[0], "exactPartial");
   },
-  required(...args) {
-    return util_exports.required(ZodNonOptional, this, args[0]);
+  required(...args2) {
+    return util_exports.required(ZodNonOptional, this, args2[0]);
   }
 });
 function object(shape, params) {
@@ -6890,6 +6842,612 @@ function bigint2(params) {
 }
 function date3(params) {
   return _coercedDate(ZodDate, params);
+}
+
+// src/schema.ts
+var id = string2().regex(/^[a-z0-9_]{1,40}$/, "ids are 1-40 chars of a-z, 0-9, _");
+var text = string2().trim().min(1);
+var uniqueBy = (key, what) => [(arr) => new Set(arr.map(key)).size === arr.length, `${what} must be unique`];
+var Level = object({ label: text.max(100), description: text.max(1e3).optional() });
+var Levels = array(Level).min(2).max(10).refine(...uniqueBy((l) => l.label, "level labels"));
+var Question = discriminatedUnion("type", [
+  object({
+    id,
+    type: literal("binary"),
+    instructions: text,
+    criteria: object({ true: text.optional(), false: text.optional() }).optional()
+  }),
+  object({
+    id,
+    type: literal("choice"),
+    instructions: text,
+    options: array(object({ value: text.max(200), description: text.max(1e3).optional() })).min(2).max(255).refine(...uniqueBy((o) => o.value, "option values"))
+  }),
+  object({ id, type: literal("score"), instructions: text, levels: Levels }),
+  object({
+    id,
+    type: literal("rank"),
+    instructions: text,
+    candidates: array(object({ id, text })).min(2).max(20).refine(...uniqueBy((c) => c.id, "candidate ids")),
+    levels: Levels.optional()
+  })
+]);
+var DecideRequest = object({
+  context: text.describe("All evidence the decision needs, as plain text. Sent to the external provider."),
+  questions: array(Question).min(1).max(16).refine(...uniqueBy((q) => q.id, "question ids")),
+  tag: string2().max(64).optional().describe("Local usage-log label. Never sent to the provider.")
+});
+var InvalidResponse = class extends Error {
+};
+
+// src/providers/jev.ts
+var Prob = number2().min(0).max(1);
+var Response2 = object({
+  model: string2(),
+  answers: record(string2(), discriminatedUnion("type", [
+    object({ type: literal("noul"), noul: Prob }),
+    object({ type: literal("choice"), choice: string2(), probabilities: record(string2(), Prob), confidence: Prob.optional() }),
+    object({ type: literal("score"), score: number2(), probabilities: record(string2(), Prob), confidence: Prob.optional() })
+  ])),
+  // OpenRouter adds usage.cost (USD). It is used in place of the price table when present.
+  usage: object({ input_tokens: number2().int().nonnegative(), output_tokens: number2().int().nonnegative().optional(), cost: number2().nonnegative().optional() })
+});
+var levelText = (l) => l.description ? `${l.label}: ${l.description}` : l.label;
+var jev = {
+  name: "jev",
+  label: "Jev (TypeSafe AI)",
+  path: "/v1/systemone",
+  defaultModel: "jev-latest",
+  compile(qs, context, model) {
+    const questions = {};
+    for (const q of qs) {
+      if (q.type === "binary") questions[q.key] = { type: "noul", instructions: q.instructions, ...q.criteria && { criteria: q.criteria } };
+      if (q.type === "choice") questions[q.key] = { type: "choice", instructions: q.instructions, criteria: Object.fromEntries(q.options.map((o) => [o.value, o.description ?? null])) };
+      if (q.type === "score") questions[q.key] = { type: "score", instructions: q.instructions, criteria: q.levels.map(levelText) };
+    }
+    return { state: context, model, questions };
+  },
+  parse(json, qs) {
+    const r = Response2.safeParse(json);
+    if (!r.success) throw new InvalidResponse(`Jev response did not match the documented schema: ${prettifyError(r.error)}`);
+    const answers = qs.map((q) => {
+      const a = r.data.answers[q.key];
+      if (!a) throw new InvalidResponse(`Jev response has no answer for question ${q.key}`);
+      if (q.type === "binary" && a.type === "noul") return { type: "binary", probability_true: a.noul };
+      if (q.type === "choice" && a.type === "choice") return { type: "choice", choice: a.choice, probabilities: a.probabilities, confidence: a.confidence };
+      if (q.type === "score" && a.type === "score") return { type: "score", expected_level: a.score, probabilities: byLabel(a.probabilities, q), confidence: a.confidence };
+      throw new InvalidResponse(`Jev answered ${q.key} with type ${a.type}, expected ${q.type}`);
+    });
+    return { model: r.data.model, answers, usage: r.data.usage };
+  },
+  classify(status2) {
+    if (status2 === 401 || status2 === 403) return { kind: "auth", retryable: false };
+    if (status2 === 402) return { kind: "quota", retryable: false };
+    if (status2 === 429) return { kind: "rate_limited", retryable: true };
+    if (status2 === 529 || status2 >= 500) return { kind: "overloaded", retryable: true };
+    return { kind: "invalid_request", retryable: false };
+  }
+};
+function byLabel(p, q) {
+  const out = {};
+  for (const [k, v] of Object.entries(p)) {
+    const level = q.levels[Number(k)];
+    if (!/^\d+$/.test(k) || !level) throw new InvalidResponse(`Jev score probability key ${k} is not a level index`);
+    out[level.label] = v;
+  }
+  return out;
+}
+var jevOpenRouter = {
+  ...jev,
+  name: "openrouter",
+  label: "Jev via OpenRouter",
+  path: "/api/v1/systemone",
+  defaultModel: "~typesafe/jev-latest"
+};
+
+// src/providers/openai.ts
+var Prob2 = number2().min(0).max(1);
+var Name = string2().optional();
+var Response3 = object({
+  model: string2(),
+  answers: array(discriminatedUnion("type", [
+    object({ type: literal("predicate"), name: Name, probability: Prob2 }),
+    object({
+      type: literal("choice"),
+      name: Name,
+      choice: union([string2(), boolean2()]),
+      probabilities: array(object({ value: union([string2(), boolean2()]), probability: Prob2 })),
+      confidence: Prob2.optional()
+    }),
+    object({
+      type: literal("score"),
+      name: Name,
+      score: number2(),
+      probabilities: array(object({ value: number2().int().nonnegative(), label: string2().optional(), probability: Prob2 })),
+      confidence: Prob2.optional()
+    }),
+    object({ type: literal("refusal"), name: Name })
+  ])),
+  usage: object({ input_tokens: number2().int().nonnegative(), output_tokens: number2().int().nonnegative().optional() })
+});
+var openai = {
+  name: "openai",
+  label: "OpenAI Decisions API",
+  path: "/v1/decisions",
+  defaultModel: "gpt-6-luna",
+  compile(qs, context, model) {
+    const questions = qs.map((q) => {
+      if (q.type === "binary") return { type: "predicate", name: q.key, instructions: withCriteria(q) };
+      if (q.type === "choice") return { type: "choice", name: q.key, instructions: q.instructions, choices: q.options };
+      return { type: "score", name: q.key, instructions: q.instructions, levels: q.levels };
+    });
+    return { model, input: context, questions };
+  },
+  parse(json, qs) {
+    const r = Response3.safeParse(json);
+    if (!r.success) throw new InvalidResponse(`OpenAI response did not match the documented schema: ${prettifyError(r.error)}`);
+    if (r.data.answers.length !== qs.length) throw new InvalidResponse(`OpenAI returned ${r.data.answers.length} answers for ${qs.length} questions`);
+    const answers = qs.map((q, i) => {
+      const a = r.data.answers.find((x) => x.name === q.key) ?? r.data.answers[i];
+      if (a.type === "refusal") return { type: "refused" };
+      if (q.type === "binary" && a.type === "predicate") return { type: "binary", probability_true: a.probability };
+      if (q.type === "choice" && a.type === "choice") {
+        return { type: "choice", choice: String(a.choice), probabilities: Object.fromEntries(a.probabilities.map((p) => [String(p.value), p.probability])), confidence: a.confidence };
+      }
+      if (q.type === "score" && a.type === "score") {
+        const probabilities = {};
+        for (const p of a.probabilities) {
+          const level = q.levels[p.value];
+          if (!level) throw new InvalidResponse(`OpenAI score level index ${p.value} is out of range`);
+          probabilities[level.label] = p.probability;
+        }
+        return { type: "score", expected_level: a.score, probabilities, confidence: a.confidence };
+      }
+      throw new InvalidResponse(`OpenAI answered ${q.key} with type ${a.type}, expected ${q.type}`);
+    });
+    return { model: r.data.model, answers, usage: r.data.usage };
+  },
+  classify(status2, body) {
+    if (status2 === 401 || status2 === 403) return { kind: "auth", retryable: false };
+    if (status2 === 429) {
+      const code = body?.error?.code;
+      return code === "insufficient_quota" ? { kind: "quota", retryable: false } : { kind: "rate_limited", retryable: true };
+    }
+    if (status2 >= 500) return { kind: "overloaded", retryable: true };
+    return { kind: "invalid_request", retryable: false };
+  }
+};
+function withCriteria(q) {
+  const c = q.criteria;
+  if (!c?.true && !c?.false) return q.instructions;
+  return [q.instructions, c.true && `True means: ${c.true}`, c.false && `False means: ${c.false}`].filter(Boolean).join("\n");
+}
+
+// src/decide.ts
+var ADAPTERS = { jev, openrouter: jevOpenRouter, openai };
+var PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1 };
+var MAX_ATTEMPTS = 3;
+var MAX_WIRE_QUESTIONS = 40;
+var DEFAULT_RANK_LEVELS = [
+  { label: "irrelevant" },
+  { label: "slightly relevant" },
+  { label: "relevant" },
+  { label: "highly relevant" },
+  { label: "best match" }
+];
+var CALIBRATION_NOTE = "Probabilities are the provider's estimates; they have not been verified as calibrated for your task.";
+var unset = (v) => v === void 0 || v.trim() === "" || v.includes("${");
+function loadConfig(env = process.env) {
+  const provider = env.DECISIONKIT_PROVIDER?.trim();
+  if (unset(provider)) return { error: `No provider selected. Set DECISIONKIT_PROVIDER to "jev", "openrouter" or "openai" (in Claude Code: the plugin's provider setting).` };
+  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev", "openrouter" or "openai", got "${provider}".` };
+  const keyVar = { jev: "DECISIONKIT_TYPESAFE_API_KEY", openrouter: "DECISIONKIT_OPENROUTER_API_KEY", openai: "DECISIONKIT_OPENAI_API_KEY" }[provider];
+  const apiKey = env[keyVar];
+  if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY / OPENROUTER_API_KEY are deliberately ignored.` };
+  let baseUrl = { jev: "https://api.typesafe.ai", openrouter: "https://openrouter.ai", openai: "https://api.openai.com" }[provider];
+  if (!unset(env.DECISIONKIT_BASE_URL)) {
+    const u = env.DECISIONKIT_BASE_URL.replace(/\/+$/, "");
+    if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(u)) return { error: "DECISIONKIT_BASE_URL may only point at http://127.0.0.1 or http://localhost." };
+    baseUrl = u;
+  }
+  let timeoutMs = 15e3;
+  if (!unset(env.DECISIONKIT_TIMEOUT_MS)) {
+    timeoutMs = Number(env.DECISIONKIT_TIMEOUT_MS);
+    if (!Number.isInteger(timeoutMs) || timeoutMs < 1e3 || timeoutMs > 6e4) return { error: "DECISIONKIT_TIMEOUT_MS must be an integer from 1000 to 60000." };
+  }
+  return {
+    provider,
+    apiKey: apiKey.trim(),
+    model: unset(env.DECISIONKIT_MODEL) ? ADAPTERS[provider].defaultModel : env.DECISIONKIT_MODEL.trim(),
+    baseUrl,
+    timeoutMs,
+    usageLog: !/^(false|0|no|off)$/i.test(env.DECISIONKIT_USAGE_LOG?.trim() ?? ""),
+    dataDir: dataDir(env)
+  };
+}
+function dataDir(env = process.env) {
+  if (!unset(env.CLAUDE_PLUGIN_DATA)) return env.CLAUDE_PLUGIN_DATA;
+  if (!unset(env.XDG_STATE_HOME)) return join(env.XDG_STATE_HOME, "decisionkit");
+  if (process.platform === "win32" && env.LOCALAPPDATA) return join(env.LOCALAPPDATA, "decisionkit");
+  return join(homedir(), ".local", "state", "decisionkit");
+}
+var realDeps = { fetch: globalThis.fetch, now: Date.now, sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
+async function decide(input, loaded, deps = realDeps) {
+  const request_id = `dk_${randomUUID()}`;
+  const fail = (provider, kind, message, extra = {}) => ({ ok: false, provider, request_id, error: { kind, message, retryable: false, ...extra } });
+  if ("error" in loaded) return fail(null, "config", loaded.error);
+  const cfg = loaded;
+  const adapter = ADAPTERS[cfg.provider];
+  const scrub = (s) => s.split(cfg.apiKey).join("***").slice(0, 500);
+  const parsed = DecideRequest.safeParse(input);
+  if (!parsed.success) return fail(cfg.provider, "invalid_request", prettifyError(parsed.error));
+  const req = parsed.data;
+  const wire = [];
+  const owner = [];
+  for (const q of req.questions) {
+    if (q.type === "rank") {
+      for (const c of q.candidates) {
+        owner.push({ qid: q.id, candidate: c.id });
+        wire.push({ key: `q${wire.length}`, type: "score", instructions: `${q.instructions}
+
+Candidate: ${c.text}`, levels: q.levels ?? DEFAULT_RANK_LEVELS });
+      }
+    } else {
+      owner.push({ qid: q.id });
+      wire.push({ ...q, key: `q${wire.length}` });
+    }
+  }
+  if (wire.length > MAX_WIRE_QUESTIONS) return fail(cfg.provider, "invalid_request", `Too many questions after expanding rank candidates (${wire.length} > ${MAX_WIRE_QUESTIONS}).`);
+  const body = JSON.stringify(adapter.compile(wire, req.context, cfg.model));
+  const start = deps.now();
+  const deadline = start + cfg.timeoutMs;
+  let attempts = 0;
+  let outcome;
+  let usage2;
+  let model = cfg.model;
+  while (!outcome) {
+    attempts++;
+    let res;
+    let text2;
+    try {
+      res = await deps.fetch(cfg.baseUrl + adapter.path, {
+        method: "POST",
+        headers: { authorization: `Bearer ${cfg.apiKey}`, "content-type": "application/json" },
+        body,
+        signal: AbortSignal.timeout(Math.max(1, Math.ceil(deadline - deps.now())))
+      });
+      text2 = await res.text();
+    } catch (e) {
+      const err = e;
+      if (err.name === "TimeoutError" || err.name === "AbortError" || deps.now() >= deadline) {
+        outcome = fail(cfg.provider, "timeout", `No response from ${adapter.label} within ${cfg.timeoutMs} ms.`, { retryable: true });
+        break;
+      }
+      if (await backoff(null)) continue;
+      outcome = fail(cfg.provider, "network", scrub(`Could not reach ${adapter.label}: ${err.message}`), { retryable: true });
+      break;
+    }
+    let json = null;
+    try {
+      json = JSON.parse(text2);
+    } catch {
+    }
+    if (res.ok) {
+      try {
+        if (json === null) throw new InvalidResponse(`${adapter.label} returned a non-JSON body.`);
+        const out = adapter.parse(json, wire);
+        model = out.model;
+        usage2 = out.usage;
+        outcome = assemble(out.answers);
+      } catch (e) {
+        if (!(e instanceof InvalidResponse)) throw e;
+        outcome = fail(cfg.provider, "provider_response_invalid", scrub(e.message));
+      }
+      break;
+    }
+    const cls = adapter.classify(res.status, json);
+    if (cls.retryable && await backoff(res.headers.get("retry-after"))) continue;
+    const providerMsg = json?.error?.message ?? text2.slice(0, 200);
+    outcome = fail(cfg.provider, cls.kind, scrub(`${adapter.label} returned HTTP ${res.status}: ${providerMsg}`), { status: res.status, retryable: cls.retryable });
+  }
+  logUsage(cfg, {
+    request_id,
+    provider: cfg.provider,
+    model,
+    tag: req.tag,
+    question_types: req.questions.map((q) => q.type),
+    wire_questions: wire.length,
+    latency_ms: deps.now() - start,
+    attempts,
+    ok: outcome.ok,
+    error_kind: outcome.ok ? void 0 : outcome.error.kind,
+    input_tokens: usage2?.input_tokens,
+    output_tokens: usage2?.output_tokens,
+    estimated_cost_usd: cost(cfg.provider, usage2)
+  });
+  return outcome;
+  async function backoff(retryAfter) {
+    if (attempts >= MAX_ATTEMPTS) return false;
+    const hinted = retryAfter && Number.isFinite(Number(retryAfter)) ? Number(retryAfter) * 1e3 : null;
+    const wait = Math.round(hinted ?? 500 * 2 ** (attempts - 1) + Math.random() * 250);
+    if (deps.now() + wait >= deadline) return false;
+    await deps.sleep(wait);
+    return true;
+  }
+  function assemble(wireAnswers) {
+    const answers = {};
+    const refused = [];
+    for (const [i, a] of wireAnswers.entries()) {
+      const q = wire[i];
+      const { qid, candidate } = owner[i];
+      if (a.type === "refused") {
+        refused.push(qid);
+        answers[qid] = { type: "refused" };
+        continue;
+      }
+      const bad = invariantError(q, a);
+      if (bad) return fail(cfg.provider, "provider_response_invalid", `${adapter.label} answer for "${qid}" ${bad}.`);
+      if (candidate) {
+        if (answers[qid]?.type === "refused") continue;
+        const r = answers[qid] ??= { type: "rank", derived: true, ranking: [] };
+        r.ranking.push({ candidate_id: candidate, expected_level: a.expected_level });
+      } else if (a.type === "binary") {
+        answers[qid] = a;
+      } else if (a.type === "choice") {
+        answers[qid] = { type: "choice", choice: a.choice, probabilities: a.probabilities, native: { confidence: a.confidence } };
+      } else {
+        const most_likely = Object.entries(a.probabilities).sort((x, y) => y[1] - x[1])[0][0];
+        answers[qid] = { type: "score", expected_level: a.expected_level, most_likely, probabilities: a.probabilities, native: { confidence: a.confidence } };
+      }
+    }
+    for (const a of Object.values(answers)) if (a.type === "rank") a.ranking.sort((x, y) => y.expected_level - x.expected_level);
+    if (refused.length) {
+      return {
+        ok: false,
+        provider: cfg.provider,
+        request_id,
+        answers,
+        error: { kind: "refused", retryable: false, message: `${adapter.label} declined to answer: ${[...new Set(refused)].join(", ")}. No decision was made for those questions.` }
+      };
+    }
+    const notes = [`Sent to ${adapter.label}.`, CALIBRATION_NOTE];
+    if (cfg.provider === "openai" && req.questions.some((q) => q.type === "binary" && q.criteria)) notes.push("Binary criteria were appended to the instructions text (OpenAI predicates have no criteria field).");
+    if (req.questions.some((q) => q.type === "rank")) notes.push("Rank is derived from independent per-candidate scores; treat close values as ties.");
+    return {
+      ok: true,
+      provider: cfg.provider,
+      model,
+      request_id,
+      latency_ms: deps.now() - start,
+      attempts,
+      usage: usage2,
+      estimated_cost_usd: cost(cfg.provider, usage2),
+      answers,
+      notes
+    };
+  }
+}
+function invariantError(q, a) {
+  if (a.type === "binary") return null;
+  if (a.type === "refused") return null;
+  const allowed = q.type === "choice" ? q.options.map((o) => o.value) : q.type === "score" ? q.levels.map((l) => l.label) : [];
+  const probs = Object.entries(a.probabilities);
+  const stray = probs.find(([k]) => !allowed.includes(k));
+  if (stray) return `has a probability for "${stray[0]}", which is not one of the supplied ${q.type === "choice" ? "options" : "levels"}`;
+  const sum = probs.reduce((s, [, p]) => s + p, 0);
+  if (Math.abs(sum - 1) > Math.max(0.02, probs.length * 5e-3)) return `has probabilities summing to ${sum.toFixed(3)}, not 1`;
+  if (a.type === "choice" && !allowed.includes(a.choice)) return `chose "${a.choice}", which is not one of the supplied options`;
+  if (a.type === "score" && (a.expected_level < 0 || a.expected_level > allowed.length - 1)) return `has expected level ${a.expected_level} outside 0..${allowed.length - 1}`;
+  return null;
+}
+function cost(provider, usage2) {
+  if (!usage2) return null;
+  return usage2.cost ?? usage2.input_tokens * PRICES[provider] / 1e6;
+}
+var logFile = (cfg) => join(cfg.dataDir, "usage.jsonl");
+function logUsage(cfg, rec) {
+  if (!cfg.usageLog) return;
+  try {
+    mkdirSync(cfg.dataDir, { recursive: true });
+    appendFileSync(logFile(cfg), JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), ...rec }) + "\n");
+  } catch (e) {
+    process.stderr.write(JSON.stringify({ level: "warn", msg: "usage log not writable", error: e.message }) + "\n");
+  }
+}
+async function status(cfg, env, ping, deps = realDeps) {
+  const seen = Object.keys(env).filter((k) => k.startsWith("DECISIONKIT_") && !unset(env[k])).sort();
+  const out = { env_vars_seen: seen, price_table_as_of: PRICES.as_of };
+  if ("error" in cfg) return { ...out, ready: false, config_error: cfg.error, usage: usageSummary(dataDir(env)) };
+  Object.assign(out, { ready: true, provider: ADAPTERS[cfg.provider].label, model: cfg.model, timeout_ms: cfg.timeoutMs, usage_log: cfg.usageLog ? logFile(cfg) : "off" });
+  if (ping) {
+    const t = deps.now();
+    try {
+      const res = await deps.fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), { headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5e3) });
+      out.ping = { ok: res.ok, status: res.status, latency_ms: deps.now() - t };
+    } catch (e) {
+      out.ping = { ok: false, error: e.name };
+    }
+  }
+  out.usage = usageSummary(cfg.dataDir);
+  return out;
+}
+function usageSummary(dir) {
+  let lines;
+  try {
+    lines = readFileSync(join(dir, "usage.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
+  } catch {
+    return { calls: 0 };
+  }
+  const lat = lines.map((l) => l.latency_ms).sort((a, b) => a - b);
+  const errors = {};
+  for (const l of lines) if (!l.ok) errors[l.error_kind] = (errors[l.error_kind] ?? 0) + 1;
+  return {
+    calls: lines.length,
+    ok: lines.filter((l) => l.ok).length,
+    errors,
+    by_provider: lines.reduce((m, l) => ({ ...m, [l.provider]: (m[l.provider] ?? 0) + 1 }), {}),
+    latency_ms: { p50: lat[Math.floor(lat.length * 0.5)], p95: lat[Math.min(lat.length - 1, Math.floor(lat.length * 0.95))] },
+    input_tokens: lines.reduce((s, l) => s + (l.input_tokens ?? 0), 0),
+    estimated_cost_usd: Number(lines.reduce((s, l) => s + (l.estimated_cost_usd ?? 0), 0).toFixed(6)),
+    since: lines[0]?.ts
+  };
+}
+
+// src/cli.ts
+var HELP = `decisionkit \u2014 ask a decision API a closed question about some text.
+
+Usage (context comes from stdin, or --context):
+  decisionkit binary "<question>"                       prints: true|false <p_true>
+  decisionkit choice "<question>" <option> <option>...   prints: <choice> <p>
+  decisionkit score  "<question>" <level> <level>...     levels low\u2192high; prints: <most likely> <p> (expected <n>)
+  decisionkit rank   "<question>" <candidate> <candidate>...   prints candidates best first
+  decisionkit status                                    provider, connectivity, usage totals
+  decisionkit                                           (no arguments) run as an MCP server
+
+Options:
+  --context <text>    use this instead of stdin
+  --threshold <p>     binary: answer is true only if p_true >= p (default 0.5)
+                      choice/score: exit 1 if the top probability is below p
+  --json              print the full result as JSON
+  --quiet             don't print which provider received the data (stderr)
+
+Exit codes: 0 = true / confident, 1 = false / below threshold, 2 = error.
+Configure with DECISIONKIT_PROVIDER (jev | openrouter | openai) and that provider's
+DECISIONKIT_*_API_KEY. Your text is sent to that provider.`;
+async function runCli(argv) {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args: argv,
+      allowPositionals: true,
+      options: { context: { type: "string" }, threshold: { type: "string" }, json: { type: "boolean" }, quiet: { type: "boolean" }, help: { type: "boolean", short: "h" } }
+    });
+  } catch (e) {
+    return usage(e.message);
+  }
+  const { values: opt, positionals: [cmd, question, ...items] } = parsed;
+  if (opt.help || cmd === "help") {
+    console.log(HELP);
+    return 0;
+  }
+  const cfg = loadConfig();
+  if (cmd === "status") {
+    console.log(JSON.stringify(await status(cfg, process.env, true), null, 2));
+    return "error" in cfg ? 2 : 0;
+  }
+  const threshold = opt.threshold === void 0 ? void 0 : Number(opt.threshold);
+  if (threshold !== void 0 && !(threshold >= 0 && threshold <= 1)) return usage("--threshold must be a number from 0 to 1");
+  if (!question) return usage(`missing question for "${cmd}"`);
+  const q = toQuestion(cmd, question, items);
+  if (typeof q === "string") return usage(q);
+  const context = opt.context ?? (process.stdin.isTTY ? "" : await readStdin());
+  if (!context.trim()) return usage("no context: pipe text on stdin or pass --context");
+  const r = await decide({ context, questions: [q] }, cfg);
+  if (!opt.quiet && r.ok) {
+    process.stderr.write(`decisionkit: sent to ${ADAPTERS[r.provider].label} (${r.model}) \xB7 ${r.latency_ms} ms \xB7 $${(r.estimated_cost_usd ?? 0).toFixed(6)}
+`);
+  }
+  if (!r.ok) {
+    if (opt.json) console.log(JSON.stringify(r, null, 2));
+    process.stderr.write(`decisionkit: ${r.error.kind}: ${r.error.message}
+`);
+    return 2;
+  }
+  if (opt.json) console.log(JSON.stringify(r, null, 2));
+  const a = r.answers.q;
+  if (a.type === "binary") {
+    const yes = a.probability_true >= (threshold ?? 0.5);
+    if (!opt.json) console.log(`${yes} ${round(a.probability_true)}`);
+    return yes ? 0 : 1;
+  }
+  if (a.type === "choice" || a.type === "score") {
+    const top = a.type === "choice" ? a.choice : a.most_likely;
+    const p = a.probabilities[top] ?? 0;
+    if (!opt.json) console.log(a.type === "choice" ? `${top} ${round(p)}` : `${top} ${round(p)} (expected ${round(a.expected_level)})`);
+    return threshold !== void 0 && p < threshold ? 1 : 0;
+  }
+  if (a.type === "rank") {
+    if (!opt.json) for (const x of a.ranking) console.log(`${round(x.expected_level)}	${items[Number(x.candidate_id.slice(1))]}`);
+    return 0;
+  }
+  return 2;
+}
+function toQuestion(cmd, instructions, items) {
+  if (!["binary", "choice", "score", "rank"].includes(cmd)) return `unknown command "${cmd}"`;
+  if (cmd === "binary") return items.length ? "binary takes no options" : { id: "q", type: "binary", instructions };
+  if (items.length < 2) return `${cmd} needs at least 2 options`;
+  if (cmd === "choice") return { id: "q", type: "choice", instructions, options: items.map((value) => ({ value })) };
+  if (cmd === "score") return { id: "q", type: "score", instructions, levels: items.map((label) => ({ label })) };
+  return { id: "q", type: "rank", instructions, candidates: items.map((text2, i) => ({ id: `c${i}`, text: text2 })) };
+}
+function usage(msg) {
+  process.stderr.write(`decisionkit: ${msg}
+Run "decisionkit --help" for usage.
+`);
+  return 2;
+}
+var round = (n) => Math.round(n * 1e3) / 1e3;
+async function readStdin() {
+  let s = "";
+  for await (const chunk of process.stdin) s += chunk;
+  return s;
+}
+
+// node_modules/@modelcontextprotocol/server/dist/chunk-Br0eD_fh.mjs
+var __create = Object.create;
+var __defProp2 = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __commonJSMin = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
+var __exportAll = (all, symbols) => {
+  let target = {};
+  for (var name in all) {
+    __defProp2(target, name, {
+      get: all[name],
+      enumerable: true
+    });
+  }
+  if (symbols) {
+    __defProp2(target, Symbol.toStringTag, { value: "Module" });
+  }
+  return target;
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+      key = keys[i];
+      if (!__hasOwnProp.call(to, key) && key !== except) {
+        __defProp2(to, key, {
+          get: ((k) => from[k]).bind(null, key),
+          enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+        });
+      }
+    }
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp2(target, "default", {
+  value: mod,
+  enumerable: true
+}) : target, mod));
+
+// node_modules/@modelcontextprotocol/server/dist/dialects-DoSzNhcb.mjs
+var DRAFT_2020_12_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft/2020-12/schema", "http://json-schema.org/draft/2020-12/schema"]);
+var DRAFT_2019_09_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft/2019-09/schema", "http://json-schema.org/draft/2019-09/schema"]);
+var DRAFT_07_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft-07/schema", "http://json-schema.org/draft-07/schema"]);
+var DRAFT_06_URIS = /* @__PURE__ */ new Set(["https://json-schema.org/draft-06/schema", "http://json-schema.org/draft-06/schema"]);
+function declares2019Dialect($schema) {
+  return typeof $schema === "string" && DRAFT_2019_09_URIS.has($schema.replace(/#$/, ""));
+}
+function declaredDialect(schema, remedy) {
+  if (!("$schema" in schema) || typeof schema.$schema !== "string") return "2020-12";
+  const declared = schema.$schema.replace(/#$/, "");
+  if (DRAFT_2020_12_URIS.has(declared)) return "2020-12";
+  if (DRAFT_2019_09_URIS.has(declared)) return "2019-09";
+  if (DRAFT_07_URIS.has(declared) || DRAFT_06_URIS.has(declared)) return "draft-7";
+  throw new Error(`JSON Schema declares an unsupported dialect ("$schema": "${schema.$schema.slice(0, 200)}"). The default validator supports JSON Schema 2020-12, 2019-09, draft-07, and draft-06; ${remedy}`);
 }
 
 // node_modules/@modelcontextprotocol/core/dist/auth-BNDyLTqp.mjs
@@ -12482,23 +13040,23 @@ var require_code$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
   };
   exports._Code = _Code;
   exports.nil = new _Code("");
-  function _(strs, ...args) {
+  function _(strs, ...args2) {
     const code = [strs[0]];
     let i = 0;
-    while (i < args.length) {
-      addCodeArg(code, args[i]);
+    while (i < args2.length) {
+      addCodeArg(code, args2[i]);
       code.push(strs[++i]);
     }
     return new _Code(code);
   }
   exports._ = _;
   const plus = new _Code("+");
-  function str(strs, ...args) {
+  function str(strs, ...args2) {
     const expr = [safeStringify(strs[0])];
     let i = 0;
-    while (i < args.length) {
+    while (i < args2.length) {
       expr.push(plus);
-      addCodeArg(expr, args[i]);
+      addCodeArg(expr, args2[i]);
       expr.push(plus, safeStringify(strs[++i]));
     }
     optimize(expr);
@@ -13043,10 +13601,10 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     }
   };
   var Func = class extends BlockNode {
-    constructor(name, args, async) {
+    constructor(name, args2, async) {
       super();
       this.name = name;
-      this.args = args;
+      this.args = args2;
       this.async = async;
     }
     render(opts) {
@@ -13271,8 +13829,8 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       this._nodes.length = len;
       return this;
     }
-    func(name, args = code_1.nil, async, funcBody) {
-      this._blockNode(new Func(name, args, async));
+    func(name, args2 = code_1.nil, async, funcBody) {
+      this._blockNode(new Func(name, args2, async));
       if (funcBody) this.code(funcBody).endFunc();
       return this;
     }
@@ -13354,13 +13912,13 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
   }
   exports.not = not;
   const andCode = mappend(exports.operators.AND);
-  function and(...args) {
-    return args.reduce(andCode);
+  function and(...args2) {
+    return args2.reduce(andCode);
   }
   exports.and = and;
   const orCode = mappend(exports.operators.OR);
-  function or(...args) {
-    return args.reduce(orCode);
+  function or(...args2) {
+    return args2.reduce(orCode);
   }
   exports.or = or;
   function mappend(op) {
@@ -13990,8 +14548,8 @@ var require_code = /* @__PURE__ */ __commonJSMin(((exports) => {
       [names_1.default.rootData, names_1.default.rootData]
     ];
     if (it.opts.dynamicRef) valCxt.push([names_1.default.dynamicAnchors, names_1.default.dynamicAnchors]);
-    const args = (0, codegen_1._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
-    return context !== codegen_1.nil ? (0, codegen_1._)`${func}.call(${context}, ${args})` : (0, codegen_1._)`${func}(${args})`;
+    const args2 = (0, codegen_1._)`${dataAndSchema}, ${gen.object(...valCxt)}`;
+    return context !== codegen_1.nil ? (0, codegen_1._)`${func}.call(${context}, ${args2})` : (0, codegen_1._)`${func}(${args2})`;
   }
   exports.callValidateCode = callValidateCode;
   const newRegExp = (0, codegen_1._)`new RegExp`;
@@ -19504,10 +20062,10 @@ var LegacyInputRequiredShim = class {
     const { maxRounds, roundTimeoutMs } = this._host;
     const outerSignal = ctx.mcpReq.signal;
     let current = firstResult;
-    let round = 0;
+    let round2 = 0;
     while (true) {
-      round += 1;
-      if (round > maxRounds) return legacyShimFailure(method, inputRequiredRoundsExceededMessage(method, maxRounds));
+      round2 += 1;
+      if (round2 > maxRounds) return legacyShimFailure(method, inputRequiredRoundsExceededMessage(method, maxRounds));
       const inputRequests = current.inputRequests;
       const hasInputRequests = inputRequests != null && Object.keys(inputRequests).length > 0;
       const requestState = typeof current.requestState === "string" ? current.requestState : void 0;
@@ -19596,16 +20154,16 @@ var Server = class extends Protocol {
   _clientCapabilities;
   _clientVersion;
   static {
-    writeClientIdentity = (server2, identity) => {
-      if (identity.clientCapabilities !== void 0) server2._clientCapabilities = identity.clientCapabilities;
-      if (identity.clientInfo !== void 0) server2._clientVersion = identity.clientInfo;
+    writeClientIdentity = (server, identity) => {
+      if (identity.clientCapabilities !== void 0) server._clientCapabilities = identity.clientCapabilities;
+      if (identity.clientInfo !== void 0) server._clientVersion = identity.clientInfo;
     };
-    installDiscoverHandler = (server2, servedModernVersions) => {
-      const missing = servedModernVersions.filter((version2) => !server2._supportedProtocolVersions.includes(version2));
-      if (missing.length > 0) server2._supportedProtocolVersions = [...server2._supportedProtocolVersions, ...missing];
-      server2.setRequestHandler("server/discover", () => server2._ondiscover());
+    installDiscoverHandler = (server, servedModernVersions) => {
+      const missing = servedModernVersions.filter((version2) => !server._supportedProtocolVersions.includes(version2));
+      if (missing.length > 0) server._supportedProtocolVersions = [...server._supportedProtocolVersions, ...missing];
+      server.setRequestHandler("server/discover", () => server._ondiscover());
     };
-    readServerIdentity = (server2) => server2._serverInfo;
+    readServerIdentity = (server) => server._serverInfo;
   }
   _capabilities;
   _instructions;
@@ -20354,8 +20912,8 @@ var McpServer = class {
       if (!tool) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Tool ${request.params.name} not found`);
       if (!tool.enabled) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Tool ${request.params.name} disabled`);
       try {
-        const args = await this.validateToolInput(tool, request.params.arguments, request.params.name);
-        const result = await this.executeToolHandler(tool, args, ctx);
+        const args2 = await this.validateToolInput(tool, request.params.arguments, request.params.name);
+        const result = await this.executeToolHandler(tool, args2, ctx);
         await this.validateToolOutput(tool, result, request.params.name);
         if (isInputRequiredResult(result)) return result;
         return this.server.projectCallToolResult(result, tool.outputSchemaJson);
@@ -20384,10 +20942,10 @@ var McpServer = class {
   /**
   * Validates tool input arguments against the tool's input schema.
   */
-  async validateToolInput(tool, args, toolName) {
-    if (this._maxToolInputElements !== void 0 && toolInputElementCount(args, this._maxToolInputElements) > this._maxToolInputElements) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid arguments for tool ${toolName}: arguments contain more than the maximum of ${this._maxToolInputElements} elements`);
+  async validateToolInput(tool, args2, toolName) {
+    if (this._maxToolInputElements !== void 0 && toolInputElementCount(args2, this._maxToolInputElements) > this._maxToolInputElements) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid arguments for tool ${toolName}: arguments contain more than the maximum of ${this._maxToolInputElements} elements`);
     if (!tool.inputSchema) return;
-    const parseResult = await validateStandardSchema(tool.inputSchema, args ?? {});
+    const parseResult = await validateStandardSchema(tool.inputSchema, args2 ?? {});
     if (!parseResult.success) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Input validation error: Invalid arguments for tool ${toolName}: ${parseResult.error}`);
     return parseResult.data;
   }
@@ -20405,8 +20963,8 @@ var McpServer = class {
   /**
   * Executes a tool handler.
   */
-  async executeToolHandler(tool, args, ctx) {
-    return tool.executor(args, ctx);
+  async executeToolHandler(tool, args2, ctx) {
+    return tool.executor(args2, ctx);
   }
   _completionHandlerInitialized = false;
   setCompletionRequestHandler() {
@@ -20790,7 +21348,7 @@ var McpServer = class {
 function createToolExecutor(inputSchema, handler) {
   if (inputSchema) {
     const callback$1 = handler;
-    return async (args, ctx) => callback$1(args, ctx);
+    return async (args2, ctx) => callback$1(args2, ctx);
   }
   const callback = handler;
   return async (_args, ctx) => callback(ctx);
@@ -20816,8 +21374,8 @@ function convertOutputSchemaJson(outputSchema) {
 function createPromptHandler(name, argsSchema, callback) {
   if (argsSchema) {
     const typedCallback = callback;
-    return async (args, ctx) => {
-      const parseResult = await validateStandardSchema(argsSchema, args ?? {});
+    return async (args2, ctx) => {
+      const parseResult = await validateStandardSchema(argsSchema, args2 ?? {});
       if (!parseResult.success) throw new ProtocolError(ProtocolErrorCode.InvalidParams, `Invalid arguments for prompt ${name}: ${parseResult.error}`);
       return typedCallback(parseResult.data, ctx);
     };
@@ -20956,463 +21514,8 @@ var StdioServerTransport = class {
   }
 };
 
-// src/decide.ts
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { randomUUID } from "node:crypto";
-
-// src/schema.ts
-var id = string2().regex(/^[a-z0-9_]{1,40}$/, "ids are 1-40 chars of a-z, 0-9, _");
-var text = string2().trim().min(1);
-var uniqueBy = (key, what) => [(arr) => new Set(arr.map(key)).size === arr.length, `${what} must be unique`];
-var Level = object({ label: text.max(100), description: text.max(1e3).optional() });
-var Levels = array(Level).min(2).max(10).refine(...uniqueBy((l) => l.label, "level labels"));
-var Question = discriminatedUnion("type", [
-  object({
-    id,
-    type: literal("binary"),
-    instructions: text,
-    criteria: object({ true: text.optional(), false: text.optional() }).optional()
-  }),
-  object({
-    id,
-    type: literal("choice"),
-    instructions: text,
-    options: array(object({ value: text.max(200), description: text.max(1e3).optional() })).min(2).max(255).refine(...uniqueBy((o) => o.value, "option values"))
-  }),
-  object({ id, type: literal("score"), instructions: text, levels: Levels }),
-  object({
-    id,
-    type: literal("rank"),
-    instructions: text,
-    candidates: array(object({ id, text })).min(2).max(20).refine(...uniqueBy((c) => c.id, "candidate ids")),
-    levels: Levels.optional()
-  })
-]);
-var DecideRequest = object({
-  context: text.describe("All evidence the decision needs, as plain text. Sent to the external provider."),
-  questions: array(Question).min(1).max(16).refine(...uniqueBy((q) => q.id, "question ids")),
-  tag: string2().max(64).optional().describe("Local usage-log label. Never sent to the provider.")
-});
-var InvalidResponse = class extends Error {
-};
-
-// src/providers/jev.ts
-var Prob = number2().min(0).max(1);
-var Response2 = object({
-  model: string2(),
-  answers: record(string2(), discriminatedUnion("type", [
-    object({ type: literal("noul"), noul: Prob }),
-    object({ type: literal("choice"), choice: string2(), probabilities: record(string2(), Prob), confidence: Prob.optional() }),
-    object({ type: literal("score"), score: number2(), probabilities: record(string2(), Prob), confidence: Prob.optional() })
-  ])),
-  // OpenRouter adds usage.cost (USD). It is used in place of the price table when present.
-  usage: object({ input_tokens: number2().int().nonnegative(), output_tokens: number2().int().nonnegative().optional(), cost: number2().nonnegative().optional() })
-});
-var levelText = (l) => l.description ? `${l.label}: ${l.description}` : l.label;
-var jev = {
-  name: "jev",
-  label: "Jev (TypeSafe AI)",
-  path: "/v1/systemone",
-  defaultModel: "jev-latest",
-  compile(qs, context, model) {
-    const questions = {};
-    for (const q of qs) {
-      if (q.type === "binary") questions[q.key] = { type: "noul", instructions: q.instructions, ...q.criteria && { criteria: q.criteria } };
-      if (q.type === "choice") questions[q.key] = { type: "choice", instructions: q.instructions, criteria: Object.fromEntries(q.options.map((o) => [o.value, o.description ?? null])) };
-      if (q.type === "score") questions[q.key] = { type: "score", instructions: q.instructions, criteria: q.levels.map(levelText) };
-    }
-    return { state: context, model, questions };
-  },
-  parse(json, qs) {
-    const r = Response2.safeParse(json);
-    if (!r.success) throw new InvalidResponse(`Jev response did not match the documented schema: ${prettifyError(r.error)}`);
-    const answers = qs.map((q) => {
-      const a = r.data.answers[q.key];
-      if (!a) throw new InvalidResponse(`Jev response has no answer for question ${q.key}`);
-      if (q.type === "binary" && a.type === "noul") return { type: "binary", probability_true: a.noul };
-      if (q.type === "choice" && a.type === "choice") return { type: "choice", choice: a.choice, probabilities: a.probabilities, confidence: a.confidence };
-      if (q.type === "score" && a.type === "score") return { type: "score", expected_level: a.score, probabilities: byLabel(a.probabilities, q), confidence: a.confidence };
-      throw new InvalidResponse(`Jev answered ${q.key} with type ${a.type}, expected ${q.type}`);
-    });
-    return { model: r.data.model, answers, usage: r.data.usage };
-  },
-  classify(status2) {
-    if (status2 === 401 || status2 === 403) return { kind: "auth", retryable: false };
-    if (status2 === 402) return { kind: "quota", retryable: false };
-    if (status2 === 429) return { kind: "rate_limited", retryable: true };
-    if (status2 === 529 || status2 >= 500) return { kind: "overloaded", retryable: true };
-    return { kind: "invalid_request", retryable: false };
-  }
-};
-function byLabel(p, q) {
-  const out = {};
-  for (const [k, v] of Object.entries(p)) {
-    const level = q.levels[Number(k)];
-    if (!/^\d+$/.test(k) || !level) throw new InvalidResponse(`Jev score probability key ${k} is not a level index`);
-    out[level.label] = v;
-  }
-  return out;
-}
-var jevOpenRouter = {
-  ...jev,
-  name: "openrouter",
-  label: "Jev via OpenRouter",
-  path: "/api/v1/systemone",
-  defaultModel: "~typesafe/jev-latest"
-};
-
-// src/providers/openai.ts
-var Prob2 = number2().min(0).max(1);
-var Name = string2().optional();
-var Response3 = object({
-  model: string2(),
-  answers: array(discriminatedUnion("type", [
-    object({ type: literal("predicate"), name: Name, probability: Prob2 }),
-    object({
-      type: literal("choice"),
-      name: Name,
-      choice: union([string2(), boolean2()]),
-      probabilities: array(object({ value: union([string2(), boolean2()]), probability: Prob2 })),
-      confidence: Prob2.optional()
-    }),
-    object({
-      type: literal("score"),
-      name: Name,
-      score: number2(),
-      probabilities: array(object({ value: number2().int().nonnegative(), label: string2().optional(), probability: Prob2 })),
-      confidence: Prob2.optional()
-    }),
-    object({ type: literal("refusal"), name: Name })
-  ])),
-  usage: object({ input_tokens: number2().int().nonnegative(), output_tokens: number2().int().nonnegative().optional() })
-});
-var openai = {
-  name: "openai",
-  label: "OpenAI Decisions API",
-  path: "/v1/decisions",
-  defaultModel: "gpt-6-luna",
-  compile(qs, context, model) {
-    const questions = qs.map((q) => {
-      if (q.type === "binary") return { type: "predicate", name: q.key, instructions: withCriteria(q) };
-      if (q.type === "choice") return { type: "choice", name: q.key, instructions: q.instructions, choices: q.options };
-      return { type: "score", name: q.key, instructions: q.instructions, levels: q.levels };
-    });
-    return { model, input: context, questions };
-  },
-  parse(json, qs) {
-    const r = Response3.safeParse(json);
-    if (!r.success) throw new InvalidResponse(`OpenAI response did not match the documented schema: ${prettifyError(r.error)}`);
-    if (r.data.answers.length !== qs.length) throw new InvalidResponse(`OpenAI returned ${r.data.answers.length} answers for ${qs.length} questions`);
-    const answers = qs.map((q, i) => {
-      const a = r.data.answers.find((x) => x.name === q.key) ?? r.data.answers[i];
-      if (a.type === "refusal") return { type: "refused" };
-      if (q.type === "binary" && a.type === "predicate") return { type: "binary", probability_true: a.probability };
-      if (q.type === "choice" && a.type === "choice") {
-        return { type: "choice", choice: String(a.choice), probabilities: Object.fromEntries(a.probabilities.map((p) => [String(p.value), p.probability])), confidence: a.confidence };
-      }
-      if (q.type === "score" && a.type === "score") {
-        const probabilities = {};
-        for (const p of a.probabilities) {
-          const level = q.levels[p.value];
-          if (!level) throw new InvalidResponse(`OpenAI score level index ${p.value} is out of range`);
-          probabilities[level.label] = p.probability;
-        }
-        return { type: "score", expected_level: a.score, probabilities, confidence: a.confidence };
-      }
-      throw new InvalidResponse(`OpenAI answered ${q.key} with type ${a.type}, expected ${q.type}`);
-    });
-    return { model: r.data.model, answers, usage: r.data.usage };
-  },
-  classify(status2, body) {
-    if (status2 === 401 || status2 === 403) return { kind: "auth", retryable: false };
-    if (status2 === 429) {
-      const code = body?.error?.code;
-      return code === "insufficient_quota" ? { kind: "quota", retryable: false } : { kind: "rate_limited", retryable: true };
-    }
-    if (status2 >= 500) return { kind: "overloaded", retryable: true };
-    return { kind: "invalid_request", retryable: false };
-  }
-};
-function withCriteria(q) {
-  const c = q.criteria;
-  if (!c?.true && !c?.false) return q.instructions;
-  return [q.instructions, c.true && `True means: ${c.true}`, c.false && `False means: ${c.false}`].filter(Boolean).join("\n");
-}
-
-// src/decide.ts
-var ADAPTERS = { jev, openrouter: jevOpenRouter, openai };
-var PRICES = { as_of: "2026-10-10", jev: 0.042, openrouter: 0.042, openai: 0.1 };
-var MAX_ATTEMPTS = 3;
-var MAX_WIRE_QUESTIONS = 40;
-var DEFAULT_RANK_LEVELS = [
-  { label: "irrelevant" },
-  { label: "slightly relevant" },
-  { label: "relevant" },
-  { label: "highly relevant" },
-  { label: "best match" }
-];
-var CALIBRATION_NOTE = "Probabilities are the provider's estimates; they have not been verified as calibrated for your task.";
-var unset = (v) => v === void 0 || v.trim() === "" || v.includes("${");
-function loadConfig(env = process.env) {
-  const provider = env.DECISIONKIT_PROVIDER?.trim();
-  if (unset(provider)) return { error: `No provider selected. Set DECISIONKIT_PROVIDER to "jev", "openrouter" or "openai" (in Claude Code: the plugin's provider setting).` };
-  if (provider !== "jev" && provider !== "openrouter" && provider !== "openai") return { error: `DECISIONKIT_PROVIDER must be "jev", "openrouter" or "openai", got "${provider}".` };
-  const keyVar = { jev: "DECISIONKIT_TYPESAFE_API_KEY", openrouter: "DECISIONKIT_OPENROUTER_API_KEY", openai: "DECISIONKIT_OPENAI_API_KEY" }[provider];
-  const apiKey = env[keyVar];
-  if (unset(apiKey)) return { error: `Provider is "${provider}" but ${keyVar} is not set. Bare OPENAI_API_KEY / TYPESAFE_API_KEY / OPENROUTER_API_KEY are deliberately ignored.` };
-  let baseUrl = { jev: "https://api.typesafe.ai", openrouter: "https://openrouter.ai", openai: "https://api.openai.com" }[provider];
-  if (!unset(env.DECISIONKIT_BASE_URL)) {
-    const u = env.DECISIONKIT_BASE_URL.replace(/\/+$/, "");
-    if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(u)) return { error: "DECISIONKIT_BASE_URL may only point at http://127.0.0.1 or http://localhost." };
-    baseUrl = u;
-  }
-  let timeoutMs = 15e3;
-  if (!unset(env.DECISIONKIT_TIMEOUT_MS)) {
-    timeoutMs = Number(env.DECISIONKIT_TIMEOUT_MS);
-    if (!Number.isInteger(timeoutMs) || timeoutMs < 1e3 || timeoutMs > 6e4) return { error: "DECISIONKIT_TIMEOUT_MS must be an integer from 1000 to 60000." };
-  }
-  return {
-    provider,
-    apiKey: apiKey.trim(),
-    model: unset(env.DECISIONKIT_MODEL) ? ADAPTERS[provider].defaultModel : env.DECISIONKIT_MODEL.trim(),
-    baseUrl,
-    timeoutMs,
-    usageLog: !/^(false|0|no|off)$/i.test(env.DECISIONKIT_USAGE_LOG?.trim() ?? ""),
-    dataDir: dataDir(env)
-  };
-}
-function dataDir(env = process.env) {
-  if (!unset(env.CLAUDE_PLUGIN_DATA)) return env.CLAUDE_PLUGIN_DATA;
-  if (!unset(env.XDG_STATE_HOME)) return join(env.XDG_STATE_HOME, "decisionkit");
-  if (process.platform === "win32" && env.LOCALAPPDATA) return join(env.LOCALAPPDATA, "decisionkit");
-  return join(homedir(), ".local", "state", "decisionkit");
-}
-var realDeps = { fetch: globalThis.fetch, now: Date.now, sleep: (ms) => new Promise((r) => setTimeout(r, ms)) };
-async function decide(input, loaded, deps = realDeps) {
-  const request_id = `dk_${randomUUID()}`;
-  const fail = (provider, kind, message, extra = {}) => ({ ok: false, provider, request_id, error: { kind, message, retryable: false, ...extra } });
-  if ("error" in loaded) return fail(null, "config", loaded.error);
-  const cfg2 = loaded;
-  const adapter = ADAPTERS[cfg2.provider];
-  const scrub = (s) => s.split(cfg2.apiKey).join("***").slice(0, 500);
-  const parsed = DecideRequest.safeParse(input);
-  if (!parsed.success) return fail(cfg2.provider, "invalid_request", prettifyError(parsed.error));
-  const req = parsed.data;
-  const wire = [];
-  const owner = [];
-  for (const q of req.questions) {
-    if (q.type === "rank") {
-      for (const c of q.candidates) {
-        owner.push({ qid: q.id, candidate: c.id });
-        wire.push({ key: `q${wire.length}`, type: "score", instructions: `${q.instructions}
-
-Candidate: ${c.text}`, levels: q.levels ?? DEFAULT_RANK_LEVELS });
-      }
-    } else {
-      owner.push({ qid: q.id });
-      wire.push({ ...q, key: `q${wire.length}` });
-    }
-  }
-  if (wire.length > MAX_WIRE_QUESTIONS) return fail(cfg2.provider, "invalid_request", `Too many questions after expanding rank candidates (${wire.length} > ${MAX_WIRE_QUESTIONS}).`);
-  const body = JSON.stringify(adapter.compile(wire, req.context, cfg2.model));
-  const start = deps.now();
-  const deadline = start + cfg2.timeoutMs;
-  let attempts = 0;
-  let outcome;
-  let usage;
-  let model = cfg2.model;
-  while (!outcome) {
-    attempts++;
-    let res;
-    let text2;
-    try {
-      res = await deps.fetch(cfg2.baseUrl + adapter.path, {
-        method: "POST",
-        headers: { authorization: `Bearer ${cfg2.apiKey}`, "content-type": "application/json" },
-        body,
-        signal: AbortSignal.timeout(Math.max(1, Math.ceil(deadline - deps.now())))
-      });
-      text2 = await res.text();
-    } catch (e) {
-      const err = e;
-      if (err.name === "TimeoutError" || err.name === "AbortError" || deps.now() >= deadline) {
-        outcome = fail(cfg2.provider, "timeout", `No response from ${adapter.label} within ${cfg2.timeoutMs} ms.`, { retryable: true });
-        break;
-      }
-      if (await backoff(null)) continue;
-      outcome = fail(cfg2.provider, "network", scrub(`Could not reach ${adapter.label}: ${err.message}`), { retryable: true });
-      break;
-    }
-    let json = null;
-    try {
-      json = JSON.parse(text2);
-    } catch {
-    }
-    if (res.ok) {
-      try {
-        if (json === null) throw new InvalidResponse(`${adapter.label} returned a non-JSON body.`);
-        const out = adapter.parse(json, wire);
-        model = out.model;
-        usage = out.usage;
-        outcome = assemble(out.answers);
-      } catch (e) {
-        if (!(e instanceof InvalidResponse)) throw e;
-        outcome = fail(cfg2.provider, "provider_response_invalid", scrub(e.message));
-      }
-      break;
-    }
-    const cls = adapter.classify(res.status, json);
-    if (cls.retryable && await backoff(res.headers.get("retry-after"))) continue;
-    const providerMsg = json?.error?.message ?? text2.slice(0, 200);
-    outcome = fail(cfg2.provider, cls.kind, scrub(`${adapter.label} returned HTTP ${res.status}: ${providerMsg}`), { status: res.status, retryable: cls.retryable });
-  }
-  logUsage(cfg2, {
-    request_id,
-    provider: cfg2.provider,
-    model,
-    tag: req.tag,
-    question_types: req.questions.map((q) => q.type),
-    wire_questions: wire.length,
-    latency_ms: deps.now() - start,
-    attempts,
-    ok: outcome.ok,
-    error_kind: outcome.ok ? void 0 : outcome.error.kind,
-    input_tokens: usage?.input_tokens,
-    output_tokens: usage?.output_tokens,
-    estimated_cost_usd: cost(cfg2.provider, usage)
-  });
-  return outcome;
-  async function backoff(retryAfter) {
-    if (attempts >= MAX_ATTEMPTS) return false;
-    const hinted = retryAfter && Number.isFinite(Number(retryAfter)) ? Number(retryAfter) * 1e3 : null;
-    const wait = Math.round(hinted ?? 500 * 2 ** (attempts - 1) + Math.random() * 250);
-    if (deps.now() + wait >= deadline) return false;
-    await deps.sleep(wait);
-    return true;
-  }
-  function assemble(wireAnswers) {
-    const answers = {};
-    const refused = [];
-    for (const [i, a] of wireAnswers.entries()) {
-      const q = wire[i];
-      const { qid, candidate } = owner[i];
-      if (a.type === "refused") {
-        refused.push(qid);
-        answers[qid] = { type: "refused" };
-        continue;
-      }
-      const bad = invariantError(q, a);
-      if (bad) return fail(cfg2.provider, "provider_response_invalid", `${adapter.label} answer for "${qid}" ${bad}.`);
-      if (candidate) {
-        if (answers[qid]?.type === "refused") continue;
-        const r = answers[qid] ??= { type: "rank", derived: true, ranking: [] };
-        r.ranking.push({ candidate_id: candidate, expected_level: a.expected_level });
-      } else if (a.type === "binary") {
-        answers[qid] = a;
-      } else if (a.type === "choice") {
-        answers[qid] = { type: "choice", choice: a.choice, probabilities: a.probabilities, native: { confidence: a.confidence } };
-      } else {
-        const most_likely = Object.entries(a.probabilities).sort((x, y) => y[1] - x[1])[0][0];
-        answers[qid] = { type: "score", expected_level: a.expected_level, most_likely, probabilities: a.probabilities, native: { confidence: a.confidence } };
-      }
-    }
-    for (const a of Object.values(answers)) if (a.type === "rank") a.ranking.sort((x, y) => y.expected_level - x.expected_level);
-    if (refused.length) {
-      return {
-        ok: false,
-        provider: cfg2.provider,
-        request_id,
-        answers,
-        error: { kind: "refused", retryable: false, message: `${adapter.label} declined to answer: ${[...new Set(refused)].join(", ")}. No decision was made for those questions.` }
-      };
-    }
-    const notes = [`Sent to ${adapter.label}.`, CALIBRATION_NOTE];
-    if (cfg2.provider === "openai" && req.questions.some((q) => q.type === "binary" && q.criteria)) notes.push("Binary criteria were appended to the instructions text (OpenAI predicates have no criteria field).");
-    if (req.questions.some((q) => q.type === "rank")) notes.push("Rank is derived from independent per-candidate scores; treat close values as ties.");
-    return {
-      ok: true,
-      provider: cfg2.provider,
-      model,
-      request_id,
-      latency_ms: deps.now() - start,
-      attempts,
-      usage,
-      estimated_cost_usd: cost(cfg2.provider, usage),
-      answers,
-      notes
-    };
-  }
-}
-function invariantError(q, a) {
-  if (a.type === "binary") return null;
-  if (a.type === "refused") return null;
-  const allowed = q.type === "choice" ? q.options.map((o) => o.value) : q.type === "score" ? q.levels.map((l) => l.label) : [];
-  const probs = Object.entries(a.probabilities);
-  const stray = probs.find(([k]) => !allowed.includes(k));
-  if (stray) return `has a probability for "${stray[0]}", which is not one of the supplied ${q.type === "choice" ? "options" : "levels"}`;
-  const sum = probs.reduce((s, [, p]) => s + p, 0);
-  if (Math.abs(sum - 1) > Math.max(0.02, probs.length * 5e-3)) return `has probabilities summing to ${sum.toFixed(3)}, not 1`;
-  if (a.type === "choice" && !allowed.includes(a.choice)) return `chose "${a.choice}", which is not one of the supplied options`;
-  if (a.type === "score" && (a.expected_level < 0 || a.expected_level > allowed.length - 1)) return `has expected level ${a.expected_level} outside 0..${allowed.length - 1}`;
-  return null;
-}
-function cost(provider, usage) {
-  if (!usage) return null;
-  return usage.cost ?? usage.input_tokens * PRICES[provider] / 1e6;
-}
-var logFile = (cfg2) => join(cfg2.dataDir, "usage.jsonl");
-function logUsage(cfg2, rec) {
-  if (!cfg2.usageLog) return;
-  try {
-    mkdirSync(cfg2.dataDir, { recursive: true });
-    appendFileSync(logFile(cfg2), JSON.stringify({ ts: (/* @__PURE__ */ new Date()).toISOString(), ...rec }) + "\n");
-  } catch (e) {
-    process.stderr.write(JSON.stringify({ level: "warn", msg: "usage log not writable", error: e.message }) + "\n");
-  }
-}
-async function status(cfg2, env, ping, deps = realDeps) {
-  const seen = Object.keys(env).filter((k) => k.startsWith("DECISIONKIT_") && !unset(env[k])).sort();
-  const out = { env_vars_seen: seen, price_table_as_of: PRICES.as_of };
-  if ("error" in cfg2) return { ...out, ready: false, config_error: cfg2.error, usage: usageSummary(dataDir(env)) };
-  Object.assign(out, { ready: true, provider: ADAPTERS[cfg2.provider].label, model: cfg2.model, timeout_ms: cfg2.timeoutMs, usage_log: cfg2.usageLog ? logFile(cfg2) : "off" });
-  if (ping) {
-    const t = deps.now();
-    try {
-      const res = await deps.fetch(cfg2.baseUrl + ADAPTERS[cfg2.provider].path.replace(/[^/]+$/, "models"), { headers: { authorization: `Bearer ${cfg2.apiKey}` }, signal: AbortSignal.timeout(5e3) });
-      out.ping = { ok: res.ok, status: res.status, latency_ms: deps.now() - t };
-    } catch (e) {
-      out.ping = { ok: false, error: e.name };
-    }
-  }
-  out.usage = usageSummary(cfg2.dataDir);
-  return out;
-}
-function usageSummary(dir) {
-  let lines;
-  try {
-    lines = readFileSync(join(dir, "usage.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
-  } catch {
-    return { calls: 0 };
-  }
-  const lat = lines.map((l) => l.latency_ms).sort((a, b) => a - b);
-  const errors = {};
-  for (const l of lines) if (!l.ok) errors[l.error_kind] = (errors[l.error_kind] ?? 0) + 1;
-  return {
-    calls: lines.length,
-    ok: lines.filter((l) => l.ok).length,
-    errors,
-    by_provider: lines.reduce((m, l) => ({ ...m, [l.provider]: (m[l.provider] ?? 0) + 1 }), {}),
-    latency_ms: { p50: lat[Math.floor(lat.length * 0.5)], p95: lat[Math.min(lat.length - 1, Math.floor(lat.length * 0.95))] },
-    input_tokens: lines.reduce((s, l) => s + (l.input_tokens ?? 0), 0),
-    estimated_cost_usd: Number(lines.reduce((s, l) => s + (l.estimated_cost_usd ?? 0), 0).toFixed(6)),
-    since: lines[0]?.ts
-  };
-}
-
 // src/server.ts
-var VERSION = "0.1.0";
+var VERSION = "0.2.0";
 var INSTRUCTIONS = `decisionkit sends a text context plus typed questions to an EXTERNAL decision API
 (provider and model are named in every result) and returns probabilities.
 
@@ -21439,46 +21542,50 @@ Rules:
 - \`rank\` is derived from independent scores; treat close values as ties.
 - Call \`status\` to see the active provider, connectivity, and usage totals.`;
 var DECIDE_DESCRIPTION = `Ask an external decision API (Jev or OpenAI Decisions; the result names which) closed-form questions about a text context: binary (probability true), choice (one of listed options), score (ordered rubric, 0-based), rank (order listed candidates; derived). Returns provider probability estimates, not verified calibrated, and no rationale. Use only for judgments over text with a closed answer set. Put all related questions about the same context in one call (one round trip). NEVER put secrets, credentials, personal data, or code the user hasn't cleared into context: it is sent to a third party. If the result is an error, report it; never substitute your own answer.`;
-var cfg = loadConfig();
-var server = new McpServer({ name: "decisionkit", version: VERSION }, { instructions: INSTRUCTIONS });
-server.registerTool("decide", {
-  title: "Decide (external decision API)",
-  description: DECIDE_DESCRIPTION,
-  inputSchema: DecideRequest,
-  annotations: { openWorldHint: true }
-  // deliberately not readOnlyHint: some clients auto-approve those
-}, async (args) => {
-  const r = await decide(args, cfg).catch((e) => ({
-    ok: false,
-    provider: null,
-    request_id: "unknown",
-    error: { kind: "network", retryable: false, message: `Unexpected failure: ${e.name}` }
-    // message omitted: may carry request data
-  }));
-  return { content: [{ type: "text", text: JSON.stringify(r, null, 2) }], isError: !r.ok };
-});
-server.registerTool("status", {
-  title: "decisionkit status",
-  description: "Show decisionkit's active provider and model, which DECISIONKIT_* settings it can see (names only, never values), a free connectivity check, and local usage totals (calls, errors, latency, tokens, estimated cost).",
-  inputSchema: object({ ping: boolean2().optional().describe("Check connectivity with the provider's free model-listing endpoint. Default true.") }),
-  annotations: { readOnlyHint: true, openWorldHint: true }
-}, async ({ ping }) => {
-  try {
-    const s = await status(cfg, process.env, ping ?? true);
-    return { content: [{ type: "text", text: JSON.stringify(s, null, 2) }] };
-  } catch (e) {
-    return { content: [{ type: "text", text: `status failed: ${e.name}` }], isError: true };
-  }
-});
-await server.connect(new StdioServerTransport());
-if (!("error" in cfg)) {
-  fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), {
-    headers: { authorization: `Bearer ${cfg.apiKey}` },
-    signal: AbortSignal.timeout(5e3)
-  }).then((r) => r.body?.cancel(), () => {
+async function serve() {
+  const cfg = loadConfig();
+  const server = new McpServer({ name: "decisionkit", version: VERSION }, { instructions: INSTRUCTIONS });
+  server.registerTool("decide", {
+    title: "Decide (external decision API)",
+    description: DECIDE_DESCRIPTION,
+    inputSchema: DecideRequest,
+    annotations: { openWorldHint: true }
+    // deliberately not readOnlyHint: some clients auto-approve those
+  }, async (args2) => {
+    const r = await decide(args2, cfg).catch((e) => ({
+      ok: false,
+      provider: null,
+      request_id: "unknown",
+      error: { kind: "network", retryable: false, message: `Unexpected failure: ${e.name}` }
+      // message omitted: may carry request data
+    }));
+    return { content: [{ type: "text", text: JSON.stringify(r, null, 2) }], isError: !r.ok };
   });
+  server.registerTool("status", {
+    title: "decisionkit status",
+    description: "Show decisionkit's active provider and model, which DECISIONKIT_* settings it can see (names only, never values), a free connectivity check, and local usage totals (calls, errors, latency, tokens, estimated cost).",
+    inputSchema: object({ ping: boolean2().optional().describe("Check connectivity with the provider's free model-listing endpoint. Default true.") }),
+    annotations: { readOnlyHint: true, openWorldHint: true }
+  }, async ({ ping }) => {
+    try {
+      const s = await status(cfg, process.env, ping ?? true);
+      return { content: [{ type: "text", text: JSON.stringify(s, null, 2) }] };
+    } catch (e) {
+      return { content: [{ type: "text", text: `status failed: ${e.name}` }], isError: true };
+    }
+  });
+  await server.connect(new StdioServerTransport());
+  if (!("error" in cfg)) {
+    fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), {
+      headers: { authorization: `Bearer ${cfg.apiKey}` },
+      signal: AbortSignal.timeout(5e3)
+    }).then((r) => r.body?.cancel(), () => {
+    });
+  }
+  process.stderr.write(JSON.stringify({ level: "info", msg: "decisionkit ready", version: VERSION, provider: "error" in cfg ? null : cfg.provider }) + "\n");
 }
-process.stderr.write(JSON.stringify({ level: "info", msg: "decisionkit ready", version: VERSION, provider: "error" in cfg ? null : cfg.provider }) + "\n");
-export {
-  VERSION
-};
+
+// src/main.ts
+var args = process.argv.slice(2);
+if (args.length === 0) await serve();
+else process.exitCode = await runCli(args);

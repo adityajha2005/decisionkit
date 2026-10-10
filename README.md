@@ -56,12 +56,39 @@ Then run `/plugin configure decisionkit@decisionkit` inside Claude Code (or pass
 
 **Fewer prompts (optional):** if you're comfortable sending context without a prompt each time, add the tool to `permissions.allow` in your settings. The tool names are `mcp__plugin_decisionkit_decisionkit__decide` and `mcp__plugin_decisionkit_decisionkit__status`.
 
+## Use it from the command line, scripts and CI
+
+The same `decisionkit` command works on its own. No agent is needed. It reads the text from stdin. The outputs shown in the comments are illustrative:
+
+```bash
+export DECISIONKIT_PROVIDER=openai DECISIONKIT_OPENAI_API_KEY=...
+
+gh issue view 412 --json body -q .body | decisionkit choice "What kind of work item is this?" bug feature refactor docs
+# bug 0.94
+
+git diff origin/main | decisionkit binary "Does this diff break the public API?" --threshold 0.8 && echo "needs a major version bump"
+
+decisionkit score "How severe is this incident?" SEV4 SEV3 SEV2 SEV1 --context "Checkout returns 500 for all users"
+# SEV1 0.88 (expected 2.9)
+
+cat bug.txt | decisionkit rank "How relevant is this file to the bug?" "csv_writer.py: formats rows" "README.md" "views.py: export endpoint"
+```
+
+- **Exit codes follow `grep`:**
+  - `0`: true, or confident enough
+  - `1`: false, or below `--threshold`
+  - `2`: error (config, network, provider). An error never produces an answer.
+- **Disclosure:** every call prints which provider received the text, plus latency and cost, on stderr. `--quiet` hides it.
+- **Full output:** `--json` prints the full result.
+- **Status:** `decisionkit status` shows the active provider, connectivity and usage totals.
+- **No arguments:** plain `decisionkit` runs as the MCP server for AI apps (below).
+
 ## Install: other AI apps (any model)
 
 The same server ships on npm. Install it once, with a pinned version:
 
 ```bash
-npm i -g decisionkit@0.1.0
+npm i -g decisionkit@0.2.0
 ```
 
 In every client, decisionkit reads **only** `DECISIONKIT_*` variables:

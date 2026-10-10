@@ -1,11 +1,10 @@
-#!/usr/bin/env node
 import { McpServer } from "@modelcontextprotocol/server";
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
 import { ADAPTERS, decide, loadConfig, status } from "./decide.ts";
 import { type DecideResult, DecideRequest } from "./schema.ts";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 
 // Loaded under Claude Code (always) and Codex, VS Code, Gemini CLI. Capped at 2,048 chars.
 const INSTRUCTIONS = `decisionkit sends a text context plus typed questions to an EXTERNAL decision API
@@ -37,43 +36,46 @@ Rules:
 // The tool description is the one place every MCP client shows the model.
 const DECIDE_DESCRIPTION = `Ask an external decision API (Jev or OpenAI Decisions; the result names which) closed-form questions about a text context: binary (probability true), choice (one of listed options), score (ordered rubric, 0-based), rank (order listed candidates; derived). Returns provider probability estimates, not verified calibrated, and no rationale. Use only for judgments over text with a closed answer set. Put all related questions about the same context in one call (one round trip). NEVER put secrets, credentials, personal data, or code the user hasn't cleared into context: it is sent to a third party. If the result is an error, report it; never substitute your own answer.`;
 
-const cfg = loadConfig();
-const server = new McpServer({ name: "decisionkit", version: VERSION }, { instructions: INSTRUCTIONS });
+/** Runs the stdio MCP server (what `decisionkit` does with no arguments). */
+export async function serve() {
+  const cfg = loadConfig();
+  const server = new McpServer({ name: "decisionkit", version: VERSION }, { instructions: INSTRUCTIONS });
 
-server.registerTool("decide", {
-  title: "Decide (external decision API)",
-  description: DECIDE_DESCRIPTION,
-  inputSchema: DecideRequest,
-  annotations: { openWorldHint: true }, // deliberately not readOnlyHint: some clients auto-approve those
-}, async (args) => {
-  const r = await decide(args, cfg).catch((e: Error): DecideResult => ({
-    ok: false, provider: null, request_id: "unknown",
-    error: { kind: "network", retryable: false, message: `Unexpected failure: ${e.name}` }, // message omitted: may carry request data
-  }));
-  return { content: [{ type: "text", text: JSON.stringify(r, null, 2) }], isError: !r.ok };
-});
+  server.registerTool("decide", {
+    title: "Decide (external decision API)",
+    description: DECIDE_DESCRIPTION,
+    inputSchema: DecideRequest,
+    annotations: { openWorldHint: true }, // deliberately not readOnlyHint: some clients auto-approve those
+  }, async (args) => {
+    const r = await decide(args, cfg).catch((e: Error): DecideResult => ({
+      ok: false, provider: null, request_id: "unknown",
+      error: { kind: "network", retryable: false, message: `Unexpected failure: ${e.name}` }, // message omitted: may carry request data
+    }));
+    return { content: [{ type: "text", text: JSON.stringify(r, null, 2) }], isError: !r.ok };
+  });
 
-server.registerTool("status", {
-  title: "decisionkit status",
-  description: "Show decisionkit's active provider and model, which DECISIONKIT_* settings it can see (names only, never values), a free connectivity check, and local usage totals (calls, errors, latency, tokens, estimated cost).",
-  inputSchema: z.object({ ping: z.boolean().optional().describe("Check connectivity with the provider's free model-listing endpoint. Default true.") }),
-  annotations: { readOnlyHint: true, openWorldHint: true },
-}, async ({ ping }) => {
-  try {
-    const s = await status(cfg, process.env, ping ?? true);
-    return { content: [{ type: "text", text: JSON.stringify(s, null, 2) }] };
-  } catch (e) {
-    return { content: [{ type: "text", text: `status failed: ${(e as Error).name}` }], isError: true };
+  server.registerTool("status", {
+    title: "decisionkit status",
+    description: "Show decisionkit's active provider and model, which DECISIONKIT_* settings it can see (names only, never values), a free connectivity check, and local usage totals (calls, errors, latency, tokens, estimated cost).",
+    inputSchema: z.object({ ping: z.boolean().optional().describe("Check connectivity with the provider's free model-listing endpoint. Default true.") }),
+    annotations: { readOnlyHint: true, openWorldHint: true },
+  }, async ({ ping }) => {
+    try {
+      const s = await status(cfg, process.env, ping ?? true);
+      return { content: [{ type: "text", text: JSON.stringify(s, null, 2) }] };
+    } catch (e) {
+      return { content: [{ type: "text", text: `status failed: ${(e as Error).name}` }], isError: true };
+    }
+  });
+
+  await server.connect(new StdioServerTransport());
+
+  // Open the TLS connection to the provider now, so the first decide() doesn't pay
+  // DNS + TLS setup (~1.7 s measured). Free endpoint, result ignored, failures silent.
+  if (!("error" in cfg)) {
+    fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), {
+      headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5000),
+    }).then((r) => r.body?.cancel(), () => {});
   }
-});
-
-await server.connect(new StdioServerTransport());
-
-// Open the TLS connection to the provider now, so the first decide() doesn't pay
-// DNS + TLS setup (~1.7 s measured). Free endpoint, result ignored, failures silent.
-if (!("error" in cfg)) {
-  fetch(cfg.baseUrl + ADAPTERS[cfg.provider].path.replace(/[^/]+$/, "models"), {
-    headers: { authorization: `Bearer ${cfg.apiKey}` }, signal: AbortSignal.timeout(5000),
-  }).then((r) => r.body?.cancel(), () => {});
+  process.stderr.write(JSON.stringify({ level: "info", msg: "decisionkit ready", version: VERSION, provider: "error" in cfg ? null : cfg.provider }) + "\n");
 }
-process.stderr.write(JSON.stringify({ level: "info", msg: "decisionkit ready", version: VERSION, provider: "error" in cfg ? null : cfg.provider }) + "\n");

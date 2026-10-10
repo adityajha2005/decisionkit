@@ -20,7 +20,7 @@ jobs:
         run: |
           mkdir -p /tmp/pack && npm pack --pack-destination /tmp/pack
           cd /tmp/pack && npm init -y && npm i --ignore-scripts ./decisionkit-*.tgz
-          cd - && DK_SERVER_BIN=/tmp/pack/node_modules/.bin/decisionkit node --test test/server.test.ts
+          cd - && DK_SERVER_BIN=/tmp/pack/node_modules/.bin/decisionkit node --test test/server.test.ts test/cli.test.ts
       - name: plugin manifests validate
         run: npx -y @anthropic-ai/claude-code plugin validate --strict . && npx -y @anthropic-ai/claude-code plugin validate --strict .claude-plugin/plugin.json
   node-floor:
